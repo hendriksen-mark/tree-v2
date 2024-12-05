@@ -1,8 +1,11 @@
 #!/usr/bin/python2.7
 from math import sin, cos, radians
 
-NUM_LEDS = 300
+NUM_LEDS = 0
 LEDS_PER_CIRCLE = [115, 85, 55, 35, 10]
+
+for x in range(len(LEDS_PER_CIRCLE)):
+    NUM_LEDS += LEDS_PER_CIRCLE[x]
 
 ### end user space ###
 
@@ -21,7 +24,7 @@ yCoords = []
 zCoords_step = 255.0 / NUM_LEDS
 
 
-for x in xrange(len(LEDS_PER_CIRCLE)):
+for x in range(len(LEDS_PER_CIRCLE)):
     radii_levels.append(255 - (x * (255 / (len(LEDS_PER_CIRCLE) - 1))))
     if x == 0:
         levelStart.append(0)
@@ -34,10 +37,10 @@ for x in xrange(len(LEDS_PER_CIRCLE)):
 current_circle = 0
 current_angle = 0.0
 current_zCoords = 0.0
-for led in xrange(NUM_LEDS):
+for led in range(NUM_LEDS):
     circle_led_sum = 0
     current_radii = 0
-    for x in xrange(len(LEDS_PER_CIRCLE)):
+    for x in range(len(LEDS_PER_CIRCLE)):
         circle_led_sum += LEDS_PER_CIRCLE[x]
         if led < circle_led_sum:
             current_radii = radii_levels[x]
@@ -55,40 +58,40 @@ for led in xrange(NUM_LEDS):
     current_angle += angles_steps[current_circle]
 
 print("const uint8_t radii[NUM_LEDS] = {")
-print str(radii)[1:-1]
+print(str(radii)[1:-1])
 print("};")
 
 print("const uint8_t angles[NUM_LEDS] = {")
-print str(angles)[1:-1]
+print(str(angles)[1:-1])
 print("};")
 
 print("const uint8_t levelCount = " + str(len(LEDS_PER_CIRCLE)) + ";")
 print("const uint8_t ledsPerLevel[levelCount] = {")
-print str(LEDS_PER_CIRCLE)[1:-1]
+print(str(LEDS_PER_CIRCLE)[1:-1])
 print("};")
 
 print("const uint16_t levelStart[levelCount] = {")
-print str(levelStart)[1:-1]
+print(str(levelStart)[1:-1])
 print("};")
 
 print("const uint16_t levelEnd[levelCount] = {")
-print str(levelEnd)[1:-1]
+print(str(levelEnd)[1:-1])
 print("};")
 
 print("const uint8_t levels[NUM_LEDS] = {")
-print str(levels)[1:-1]
+print(str(levels)[1:-1])
 print("};")
 
 print("const uint8_t zCoords[NUM_LEDS] = {")
-print str(zCoords)[1:-1]
+print(str(zCoords)[1:-1])
 print("};")
 
 print("const uint8_t xCoords[NUM_LEDS] = {")
-print str(xCoords)[1:-1]
+print(str(xCoords)[1:-1])
 print("};")
 
 print("const uint8_t yCoords[NUM_LEDS] = {")
-print str(yCoords)[1:-1]
+print(str(yCoords)[1:-1])
 print("};")
 
 print("""uint16_t getNearestToAngleAndLevel(uint8_t angle, uint8_t level) {

@@ -1,4 +1,4 @@
-#include <FastLED.h>
+//#include <FastLED.h>
 //#include "Map.h"
 struct Meteor {
   uint8_t angle = random8();
