@@ -42,3 +42,5 @@ jobs:
               libraries: |
                 - source-url: "https://github.com/FastLED/FastLED.git"
                   name: FastLED
+              sketch-paths: |
+                - 
