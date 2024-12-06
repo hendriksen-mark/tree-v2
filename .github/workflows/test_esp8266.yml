@@ -39,6 +39,8 @@ jobs:
         with:
               platforms: ${{ matrix.platforms }}
               fqbn: ${{ matrix.board.fqbn }}
+              cli-compile-flags: |
+                - "--log-level error"
               libraries: |
                 - source-url: "https://github.com/FastLED/FastLED.git"
                   name: FastLED
