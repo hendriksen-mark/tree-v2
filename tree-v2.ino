@@ -30,7 +30,7 @@ extern "C" {
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
 //#include <WebSocketsServer.h>
-#include <FS.h>
+#include <LittleFS.h>
 #include <EEPROM.h>
 // #include <IRremoteESP8266.h>
 #include "GradientPalettes.h"
@@ -268,9 +268,9 @@ void setup() {
   Serial.print( F("Vcc: ") ); Serial.println(ESP.getVcc());
   Serial.println();
 
-  SPIFFS.begin();
+  LittleFS.begin();
   {
-    Dir dir = SPIFFS.openDir("/");
+    Dir dir = LittleFS.openDir("/");
     while (dir.next()) {
       String fileName = dir.fileName();
       size_t fileSize = dir.fileSize();
@@ -471,7 +471,7 @@ void setup() {
     webServer.send(200, "text/plain", "");
   }, handleFileUpload);
 
-  webServer.serveStatic("/", SPIFFS, "/", "max-age=86400");
+  webServer.serveStatic("/", LittleFS, "/", "max-age=86400");
 
   webServer.begin();
   Serial.println("HTTP web server started");
