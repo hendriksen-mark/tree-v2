@@ -42,5 +42,9 @@ jobs:
               libraries: |
                 - source-url: "https://github.com/FastLED/FastLED.git"
                   name: FastLED
+                - source-url: "https://github.com/Links2004/arduinoWebSockets.git"
+                  name: WebSockets
+                - source-url: "https://github.com/crankyoldgit/IRremoteESP8266.git"
+                  name: IRremoteESP8266
               sketch-paths: |
                 - ./
