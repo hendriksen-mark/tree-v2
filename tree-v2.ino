@@ -314,7 +314,7 @@ void setup() {
     char AP_NameChar[AP_NameString.length() + 1];
     memset(AP_NameChar, 0, AP_NameString.length() + 1);
 
-    for (int i = 0; i < AP_NameString.length(); i++)
+    for (unsigned int i = 0; i < AP_NameString.length(); i++)
       AP_NameChar[i] = AP_NameString.charAt(i);
 
     WiFi.softAP(AP_NameChar, WiFiAPPSK);
