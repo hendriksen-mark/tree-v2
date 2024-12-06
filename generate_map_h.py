@@ -77,7 +77,7 @@ f.write("""/*
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */\n\n""")
 
-f.write("const uint8_t radii[NUM_LEDS] = {\n  ")
+f.write("const double radii[NUM_LEDS] = {\n  ")
 f.write(str(radii)[1:-1])
 f.write("\n};\n\n")
 
