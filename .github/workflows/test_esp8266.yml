@@ -39,5 +39,7 @@ jobs:
         with:
               platforms: ${{ matrix.platforms }}
               fqbn: ${{ matrix.board.fqbn }}
+              cli-compile-flags: |
+                - lib install
               sketch-paths: |
                 - ./
