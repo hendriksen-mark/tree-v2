@@ -1,4 +1,4 @@
-#include "Field.h"
+
 uint8_t power = 1;
 uint8_t brightness = brightnessMap[brightnessIndex];
 
