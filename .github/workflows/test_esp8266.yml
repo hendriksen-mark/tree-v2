@@ -39,10 +39,5 @@ jobs:
         with:
               platforms: ${{ matrix.platforms }}
               fqbn: ${{ matrix.board.fqbn }}
-              cli-compile-flags: |
-                - --quiet
-              libraries: |
-                - source-url: "https://github.com/FastLED/FastLED.git"
-                  name: FastLED
               sketch-paths: |
                 - ./
