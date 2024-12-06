@@ -57,44 +57,68 @@ for led in range(NUM_LEDS):
     yCoords.append(int(128 + (current_radii / 2) * sin(radians((current_angle/256)*360))))
     current_angle += angles_steps[current_circle]
 
-print("const uint8_t radii[NUM_LEDS] = {")
-print(str(radii)[1:-1])
-print("};")
+f = open("Map.h", "w")
 
-print("const uint8_t angles[NUM_LEDS] = {")
-print(str(angles)[1:-1])
-print("};")
+f.write("""/*
+   Tree v2: https://github.com/evilgeniuslabs/tree-v2
+   Copyright (C) 2016 Jason Coon
 
-print("const uint8_t levelCount = " + str(len(LEDS_PER_CIRCLE)) + ";")
-print("const uint8_t ledsPerLevel[levelCount] = {")
-print(str(LEDS_PER_CIRCLE)[1:-1])
-print("};")
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-print("const uint16_t levelStart[levelCount] = {")
-print(str(levelStart)[1:-1])
-print("};")
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-print("const uint16_t levelEnd[levelCount] = {")
-print(str(levelEnd)[1:-1])
-print("};")
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/\n\n""")
 
-print("const uint8_t levels[NUM_LEDS] = {")
-print(str(levels)[1:-1])
-print("};")
+f.write("const uint8_t radii[NUM_LEDS] = {\n  ")
+f.write(str(radii)[1:-1])
+f.write("\n};\n\n")
 
-print("const uint8_t zCoords[NUM_LEDS] = {")
-print(str(zCoords)[1:-1])
-print("};")
+f.write("const uint8_t conicalRadii[NUM_LEDS] = {\n  ")
+f.write("0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2\n")
+f.write("};\n\n")
 
-print("const uint8_t xCoords[NUM_LEDS] = {")
-print(str(xCoords)[1:-1])
-print("};")
+f.write("const uint8_t angles[NUM_LEDS] = {\n  ")
+f.write(str(angles)[1:-1])
+f.write("\n};\n\n")
 
-print("const uint8_t yCoords[NUM_LEDS] = {")
-print(str(yCoords)[1:-1])
-print("};")
+f.write("const uint8_t levelCount = " + str(len(LEDS_PER_CIRCLE)) + ";\n")
+f.write("const uint8_t ledsPerLevel[levelCount] = {\n  ")
+f.write(str(LEDS_PER_CIRCLE)[1:-1])
+f.write("\n};\n\n")
 
-print("""uint16_t getNearestToAngleAndLevel(uint8_t angle, uint8_t level) {
+f.write("const uint16_t levelStart[levelCount] = {\n  ")
+f.write(str(levelStart)[1:-1])
+f.write("\n};\n\n")
+
+f.write("const uint16_t levelEnd[levelCount] = {\n  ")
+f.write(str(levelEnd)[1:-1])
+f.write("\n};\n\n")
+
+f.write("const uint8_t levels[NUM_LEDS] = {\n  ")
+f.write(str(levels)[1:-1])
+f.write("\n};\n\n")
+
+f.write("const uint8_t zCoords[NUM_LEDS] = {\n  ")
+f.write(str(zCoords)[1:-1])
+f.write("\n};\n\n")
+
+f.write("const uint8_t xCoords[NUM_LEDS] = {\n  ")
+f.write(str(xCoords)[1:-1])
+f.write("\n};\n\n")
+
+f.write("const uint8_t yCoords[NUM_LEDS] = {\n  ")
+f.write(str(yCoords)[1:-1])
+f.write("\n};\n\n")
+
+f.write("""uint16_t getNearestToAngleAndLevel(uint8_t angle, uint8_t level) {
   uint8_t smallestDifference = 255;
   uint8_t nearestIndex = 0;
 
@@ -116,4 +140,6 @@ print("""uint16_t getNearestToAngleAndLevel(uint8_t angle, uint8_t level) {
   }
 
   return nearestIndex;
-}""")
+}\n""")
+
+f.close()
