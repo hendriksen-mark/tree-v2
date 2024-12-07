@@ -291,11 +291,19 @@ void setup() {
 
   LittleFS.begin();
   {
+#if defined(ESP8266)
+    Dir dir = LittleFS.openDir("/");
+    while (dir.next()) {
+      String fileName = dir.fileName();
+      size_t fileSize = dir.fileSize();
+    //LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
+#elif defined(ESP32)
     File dir = LittleFS.open("/");
     while (dir.openNextFile()) {
       String fileName = dir.getNextFileName();
       size_t fileSize = dir.size();
       //LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
+#endif
     }
     //LOG_DEBUG("\n");
   }
