@@ -21,42 +21,63 @@
 #include <FastLED.h>
 FASTLED_USING_NAMESPACE
 
-extern "C" {
-#include "user_interface.h"
-}
+#if defined(ESP8266)
+  extern "C" {
+  //#include "user_interface.h"
+  }
 
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include <WiFiManager.h>
+  #include <ESP8266WiFi.h>
+  //#include <mDNS.h>
+  #include <ESP8266WebServer.h>
+  #include <ESP8266HTTPUpdateServer.h>
+  #define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
+  ESP8266WebServer webServer(80);
+  ESP8266HTTPUpdateServer httpUpdateServer;
+
+#elif defined(ESP32)
+  #include <WiFi.h>
+  //#include <mDNS.h>
+  #include <WebServer.h>
+  #include <HTTPUpdateServer.h>
+  #define HOSTNAME "Tree-ESP32-" ///< Hostname. The setup function adds the Chip ID at the end.
+  WebServer webServer(80);
+  HTTPUpdateServer httpUpdateServer;
+#endif
+
+#define WebSocketsServer_enable false
+#if WebSocketsServer_enable
 #include <WebSocketsServer.h>
+WebSocketsServer webSocketsServer = WebSocketsServer(81);
+#endif
+
 #include <LittleFS.h>
 #include <EEPROM.h>
-#include <IRremoteESP8266.h>
-#include <IRrecv.h>
-#include <IRutils.h>
 #include "GradientPalettes.h"
+#include <DebugLog.h>
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #include "Field.h"
 
-#define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
-
-#define RECV_PIN 2
-IRrecv irReceiver(RECV_PIN);
-
-#include "Commands.h"
+#define IR_enable false
+#if IR_enable
+  #define RECV_PIN 2
+  #include <IRremoteESP8266.h>
+  #include <IRrecv.h>
+  #include <IRutils.h>
+  IRrecv irReceiver(RECV_PIN);
+  #include "Commands.h"
+#endif
 
 const bool apMode = false;
 
 // AP mode password
 const char WiFiAPPSK[] = "";
 
-ESP8266WebServer webServer(80);
-WebSocketsServer webSocketsServer = WebSocketsServer(81);
-ESP8266HTTPUpdateServer httpUpdateServer;
+// Wi-Fi network to connect to (if not in AP mode)
+const char* ssid = "TMNL-600BA9";
+const char* password = "4R7TQMG8YRVNSH4C";
+
 
 #include "FSBrowser.h"
 
@@ -234,9 +255,10 @@ const uint8_t patternCount = ARRAY_SIZE(patterns);
 #include "Fields.h"
 
 void setup() {
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  //WiFi.setSleepMode(WIFI_NONE_SLEEP);
   
   Serial.begin(115200);
+  LOG_SET_LEVEL(DebugLogLevel::LVL_TRACE);
   delay(100);
   Serial.setDebugOutput(true);
 
@@ -254,33 +276,33 @@ void setup() {
 
   FastLED.setBrightness(brightness);
 
+#if IR_enable
   irReceiver.enableIRIn(); // Start the receiver
+#endif
 
-  Serial.println();
-  Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
-  Serial.print( F("Boot Vers: ") ); Serial.println(system_get_boot_version());
-  Serial.print( F("CPU: ") ); Serial.println(system_get_cpu_freq());
-  Serial.print( F("SDK: ") ); Serial.println(system_get_sdk_version());
-  Serial.print( F("Chip ID: ") ); Serial.println(system_get_chip_id());
-  Serial.print( F("Flash ID: ") ); Serial.println(spi_flash_get_id());
-  Serial.print( F("Flash Size: ") ); Serial.println(ESP.getFlashChipRealSize());
-  Serial.print( F("Vcc: ") ); Serial.println(ESP.getVcc());
-  Serial.println();
+  //LOG_DEBUG("Heap:",system_get_free_heap_size());
+  //LOG_DEBUG("Boot Vers:", system_get_boot_version());
+  //LOG_DEBUG("CPU:", system_get_cpu_freq());
+  //LOG_DEBUG("SDK:", system_get_sdk_version());
+  //LOG_DEBUG("Chip ID:", system_get_chip_id());
+  //LOG_DEBUG("Flash ID:", spi_flash_get_id());
+  //LOG_DEBUG("Flash Size:", ESP.getFlashChipRealSize());
+  //LOG_DEBUG("Vcc:", ESP.getVcc());
 
   LittleFS.begin();
   {
-    Dir dir = LittleFS.openDir("/");
-    while (dir.next()) {
-      String fileName = dir.fileName();
-      size_t fileSize = dir.fileSize();
-      Serial.printf("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
+    File dir = LittleFS.open("/");
+    while (dir.openNextFile()) {
+      String fileName = dir.getNextFileName();
+      size_t fileSize = dir.size();
+      //LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
     }
-    Serial.printf("\n");
+    //LOG_DEBUG("\n");
   }
 
   // Set Hostname.
   String hostname(HOSTNAME);
-  hostname += String(ESP.getChipId(), HEX);
+  //hostname += String(ESP.getChipId(), HEX);
   WiFi.hostname(hostname);
 
   char hostnameChar[hostname.length() + 1];
@@ -289,13 +311,13 @@ void setup() {
   for (uint8_t i = 0; i < hostname.length(); i++)
     hostnameChar[i] = hostname.charAt(i);
 
-  MDNS.begin(hostnameChar);
+  //MDNS.begin(hostnameChar);
   //
   //  // Add service to MDNS-SD
-  MDNS.addService("http", "tcp", 80);
+  //MDNS.addService("http", "tcp", 80);
 
   // Print hostname.
-  Serial.println("Hostname: " + hostname);
+  //LOG_DEBUG("Hostname: ", hostname);
 
   if (apMode)
   {
@@ -303,12 +325,12 @@ void setup() {
 
     // Do a little work to get a unique-ish name. Append the
     // last two bytes of the MAC (HEX'd) to "Thing-":
-    uint8_t mac[WL_MAC_ADDR_LENGTH];
-    WiFi.softAPmacAddress(mac);
-    String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                   String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-    macID.toUpperCase();
-    String AP_NameString = "ESP8266-" + macID;
+    //uint8_t mac[WL_MAC_ADDR_LENGTH];
+    //WiFi.softAPmacAddress(mac);
+    //String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+    //               String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+    //macID.toUpperCase();
+    String AP_NameString = "ESP8266-";
 
     char AP_NameChar[AP_NameString.length() + 1];
     memset(AP_NameChar, 0, AP_NameString.length() + 1);
@@ -318,19 +340,16 @@ void setup() {
 
     WiFi.softAP(AP_NameChar, WiFiAPPSK);
 
-    Serial.printf("Connect to Wi-Fi access point: %s\n", AP_NameChar);
-    Serial.println("and open http://192.168.4.1 in your browser");
+    //LOG_DEBUG("Connect to Wi-Fi access point:", AP_NameString);
+    //LOG_DEBUG("and open http://192.168.4.1 in your browser");
   }
   else
   {
     WiFi.mode(WIFI_STA);
-    WiFiManager wifiManager; // wifimanager will start the configuration SSID if wifi connection is not succesfully 
-
-    if (!wifiManager.autoConnect(hostnameChar)) { // light was not connected to wifi and not configured so reset.
-    delay(3000);
-    ESP.reset();
-    delay(5000);
-  }
+    //LOG_DEBUG("Connecting to", ssid);
+    if (String(WiFi.SSID()) != String(ssid)) {
+      WiFi.begin(ssid, password);
+    }
   }
 
   httpUpdateServer.setup(&webServer);
@@ -473,14 +492,20 @@ void setup() {
     webServer.send(200, "text/plain", "");
   }, handleFileUpload);
 
+  //webServer.on("/", []() {
+    //Serial.print(Get_http_content());
+    //webServer.send(200, "text/html", Get_http_content());
+  //});
   webServer.serveStatic("/", LittleFS, "/", "max-age=86400");
 
   webServer.begin();
-  Serial.println("HTTP web server started");
+  //LOG_DEBUG("HTTP web server started");
 
+#if WebSocketsServer_enable
   webSocketsServer.begin();
   webSocketsServer.onEvent(webSocketEvent);
-  Serial.println("Web socket server started");
+  //LOG_DEBUG("Web socket server started");
+#endif
 
   autoPlayTimeout = millis() + (autoplayDuration * 1000);
 }
@@ -498,23 +523,32 @@ void sendString(String value)
 void broadcastInt(String name, uint8_t value)
 {
   String json = "{\"name\":\"" + name + "\",\"value\":" + String(value) + "}";
+#if WebSocketsServer_enable
   webSocketsServer.broadcastTXT(json);
+#endif
 }
 
 void broadcastString(String name, String value)
 {
   String json = "{\"name\":\"" + name + "\",\"value\":\"" + String(value) + "\"}";
+#if WebSocketsServer_enable
   webSocketsServer.broadcastTXT(json);
+#endif
 }
 
 void loop() {
   // Add entropy to random number generator; we use a lot of it.
   random16_add_entropy(random(65535));
 
+#if WebSocketsServer_enable
   webSocketsServer.loop();
+#endif
+
   webServer.handleClient();
 
+#if IR_enable
   handleIrInput();
+#endif
 
   if (power == 0) {
     fill_solid(leds, NUM_LEDS, CRGB::Black);
@@ -524,7 +558,7 @@ void loop() {
   }
 
   //   EVERY_N_SECONDS(10) {
-  //     Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
+  //     //LOG_DEBUG("Heap:", system_get_free_heap_size());
   //   }
 
   // change to a new cpt-city gradient palette
@@ -559,17 +593,18 @@ void loop() {
   // FastLED.delay(1000 / FRAMES_PER_SECOND);
 }
 
+#if WebSocketsServer_enable
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
 
   switch (type) {
     case WStype_DISCONNECTED:
-      Serial.printf("[%u] Disconnected!\n", num);
+      //LOG_DEBUG(num, " Disconnected!");
       break;
 
     case WStype_CONNECTED:
       {
         IPAddress ip = webSocketsServer.remoteIP(num);
-        Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+        //LOG_DEBUG(num, "Connected from", ip[0], ip[1], ip[2], ip[3], "url:", payload);
 
         // send message to client
         webSocketsServer.sendTXT(num, "Connected");
@@ -577,7 +612,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
 
     case WStype_TEXT:
-      Serial.printf("[%u] get Text: %s\n", num, payload);
+      //LOG_DEBUG(num, "get Text:", payload);
 
       // send message to client
       webSocketsServer.sendTXT(num, "message here");
@@ -587,22 +622,23 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
 
     case WStype_BIN:
-      Serial.printf("[%u] get binary length: %u\n", num, length);
-      hexdump(payload, length);
+      //LOG_DEBUG(num, "get binary length:", length);
+      //hexdump(payload, length);
 
       // send message to client
       webSocketsServer.sendBIN(num, payload, length);
       break;
   }
 }
+#endif
 
+#if IR_enable
 void handleIrInput()
 {
   InputCommand command = readCommand(defaultHoldDelay);
 
   if (command != InputCommand::None) {
-    Serial.print("command: ");
-    Serial.println((int) command);
+    //LOG_DEBUG("command:", command);
   }
 
   switch (command) {
@@ -802,6 +838,7 @@ void handleIrInput()
       }
   }
 }
+#endif
 
 void loadSettings()
 {

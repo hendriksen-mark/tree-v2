@@ -32,7 +32,7 @@ String getContentType(String filename){
 }
 
 bool handleFileRead(String path){
-  Serial.println("handleFileRead: " + path);
+  //LOG_DEBUG("handleFileRead:", path);
   if(path.endsWith("/")) path += "index.htm";
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
@@ -42,7 +42,7 @@ bool handleFileRead(String path){
     File file = LittleFS.open(path, "r");
     size_t contentLength = webServer.streamFile(file, contentType);
     file.close();
-    Serial.println("Send contentLength: " + (String)contentLength);
+    //LOG_DEBUG("Send contentLength:", contentLength);
     return true;
   }
   return false;
@@ -54,24 +54,24 @@ void handleFileUpload(){
   if(upload.status == UPLOAD_FILE_START){
     String filename = upload.filename;
     if(!filename.startsWith("/")) filename = "/"+filename;
-    Serial.print("handleFileUpload Name: "); Serial.println(filename);
+    //LOG_DEBUG("handleFileUpload Name:", filename);
     fsUploadFile = LittleFS.open(filename, "w");
     filename = String();
   } else if(upload.status == UPLOAD_FILE_WRITE){
-    //Serial.print("handleFileUpload Data: "); Serial.println(upload.currentSize);
+    //LOG_DEBUG("handleFileUpload Data:", upload.currentSize);
     if(fsUploadFile)
       fsUploadFile.write(upload.buf, upload.currentSize);
   } else if(upload.status == UPLOAD_FILE_END){
     if(fsUploadFile)
       fsUploadFile.close();
-    Serial.print("handleFileUpload Size: "); Serial.println(upload.totalSize);
+    //LOG_DEBUG("handleFileUpload Size:", upload.totalSize);
   }
 }
 
 void handleFileDelete(){
   if(webServer.args() == 0) return webServer.send(500, "text/plain", "BAD ARGS");
   String path = webServer.arg(0);
-  Serial.println("handleFileDelete: " + path);
+  //LOG_DEBUG("handleFileDelete:", path);
   if(path == "/")
     return webServer.send(500, "text/plain", "BAD PATH");
   if(!LittleFS.exists(path))
@@ -85,7 +85,7 @@ void handleFileCreate(){
   if(webServer.args() == 0)
     return webServer.send(500, "text/plain", "BAD ARGS");
   String path = webServer.arg(0);
-  Serial.println("handleFileCreate: " + path);
+  //LOG_DEBUG("handleFileCreate:", path);
   if(path == "/")
     return webServer.send(500, "text/plain", "BAD PATH");
   if(LittleFS.exists(path))
@@ -103,21 +103,21 @@ void handleFileList() {
   if(!webServer.hasArg("dir")) {webServer.send(500, "text/plain", "BAD ARGS"); return;}
   
   String path = webServer.arg("dir");
-  Serial.println("handleFileList: " + path);
-  Dir dir = LittleFS.openDir(path);
+  //LOG_DEBUG("handleFileList: ", path);
+  File dir = LittleFS.open(path);
   path = String();
 
   String output = "[";
-  while(dir.next()){
-    File entry = dir.openFile("r");
+  while(dir.openNextFile()){
+    //File entry = dir.open("r");
     if (output != "[") output += ',';
     bool isDir = false;
     output += "{\"type\":\"";
     output += (isDir)?"dir":"file";
     output += "\",\"name\":\"";
-    output += String(entry.name()).substring(1);
+    output += String(dir.name()).substring(1);
     output += "\"}";
-    entry.close();
+    dir.close();
   }
   
   output += "]";

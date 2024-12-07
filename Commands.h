@@ -185,7 +185,7 @@ unsigned long decodeIRCode() {
     // delay(20);
 
     if (results.value != 0)
-      Serial.println(results.value);
+      //LOG_DEBUG(results.value);
 
     // Prepare to receive the next IR code
     irReceiver.resume();
@@ -209,7 +209,7 @@ unsigned long readIRCode() {
   while (decodeIRCode() == code) {
     ;
   }
-  // Serial.println(code);
+  //LOG_DEBUG(code);
   return code;
 }
 
@@ -226,9 +226,9 @@ unsigned long readIRCode(unsigned int holdDelay) {
   // read the raw code from the sensor
   unsigned long irCode = readIRCode();
 
-  //Serial.print(millis());
-  //Serial.print("\t");
-  //Serial.println(irCode);
+  //LOG_DEBUG(millis());
+  //LOG_DEBUG("\t");
+  //LOG_DEBUG(irCode);
 
   // don't return a short click until we know it's not a long hold
   // we'll have to wait for holdDelay ms to pass before returning a non-zero IR code
@@ -246,7 +246,7 @@ unsigned long readIRCode(unsigned int holdDelay) {
   if (irCode == 0) {
     zeroTime = millis() - zeroStartTime;
     if (zeroTime >= zeroDelay && lastIrCode != 0) {
-      //Serial.println(F("zero delay has elapsed, returning last ir code"));
+      //LOG_DEBUG("zero delay has elapsed, returning last ir code");
       // the button has been released for longer than the zero delay
       // start over delays over and return the last code
       irCode = lastIrCode;
@@ -267,7 +267,7 @@ unsigned long readIRCode(unsigned int holdDelay) {
     heldTime = millis() - holdStartTime;
     if (heldTime >= holdDelay) {
       isHolding = true;
-      //Serial.println(F("hold delay has elapsed, returning last ir code"));
+      //LOG_DEBUG("hold delay has elapsed, returning last ir code");
       return lastIrCode;
     }
     else if (holdStartTime == 0) {
