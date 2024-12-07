@@ -46,5 +46,7 @@ jobs:
                   name: WebSockets
                 - source-url: "https://github.com/crankyoldgit/IRremoteESP8266.git"
                   name: IRremoteESP8266
+                - source-url: "https://github.com/tzapu/WiFiManager.git"
+                  name: WiFiManager
               sketch-paths: |
                 - ./
