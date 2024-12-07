@@ -29,6 +29,7 @@ extern "C" {
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
+#include <WiFiManager.h>
 #include <WebSocketsServer.h>
 #include <LittleFS.h>
 #include <EEPROM.h>
@@ -52,10 +53,6 @@ const bool apMode = false;
 
 // AP mode password
 const char WiFiAPPSK[] = "";
-
-// Wi-Fi network to connect to (if not in AP mode)
-const char* ssid = "";
-const char* password = "";
 
 ESP8266WebServer webServer(80);
 WebSocketsServer webSocketsServer = WebSocketsServer(81);
@@ -327,10 +324,13 @@ void setup() {
   else
   {
     WiFi.mode(WIFI_STA);
-    Serial.printf("Connecting to %s\n", ssid);
-    if (String(WiFi.SSID()) != String(ssid)) {
-      WiFi.begin(ssid, password);
-    }
+    WiFiManager wifiManager; // wifimanager will start the configuration SSID if wifi connection is not succesfully 
+
+    if (!wifiManager.autoConnect(hostnameChar)) { // light was not connected to wifi and not configured so reset.
+    delay(3000);
+    ESP.reset();
+    delay(5000);
+  }
   }
 
   httpUpdateServer.setup(&webServer);
