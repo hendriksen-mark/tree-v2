@@ -40,8 +40,9 @@ bool handleFileRead(String path){
     if(LittleFS.exists(pathWithGz))
       path += ".gz";
     File file = LittleFS.open(path, "r");
-    size_t sent = webServer.streamFile(file, contentType);
+    size_t contentLength = webServer.streamFile(file, contentType);
     file.close();
+    Serial.println("Send contentLength: " + (String)contentLength);
     return true;
   }
   return false;
