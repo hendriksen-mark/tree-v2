@@ -98,6 +98,7 @@ void handleFileCreate(){
   webServer.send(200, "text/plain", "");
   path = String();
 }
+
 #if defined(ESP8266)
 void handleFileList() {
   if(!webServer.hasArg("dir")) {webServer.send(500, "text/plain", "BAD ARGS"); return;}
@@ -108,14 +109,14 @@ void handleFileList() {
   path = String();
 
   String output = "[";
-  while(dir.openNextFile()){
+  while(dir.next()){
     File entry = dir.openFile("r");
     if (output != "[") output += ',';
     bool isDir = false;
     output += "{\"type\":\"";
     output += (isDir)?"dir":"file";
     output += "\",\"name\":\"";
-    utput += String(entry.name()).substring(1);
+    output += String(entry.name()).substring(1);
     output += "\"}";
     entry.close();
   }
