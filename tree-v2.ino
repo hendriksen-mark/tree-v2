@@ -23,7 +23,7 @@ FASTLED_USING_NAMESPACE
 
 #if defined(ESP8266)
   extern "C" {
-  //#include "user_interface.h"
+  #include "user_interface.h"
   }
 
   #include <ESP8266WiFi.h>
@@ -75,8 +75,8 @@ const bool apMode = false;
 const char WiFiAPPSK[] = "";
 
 // Wi-Fi network to connect to (if not in AP mode)
-const char* ssid = "TMNL-600BA9";
-const char* password = "4R7TQMG8YRVNSH4C";
+const char* ssid = "";
+const char* password = "";
 
 
 #include "FSBrowser.h"
