@@ -196,24 +196,6 @@ void handleFileList() {
   }
   String output = listDir(LittleFS, path, 1);
 
-  /*String output = "[";
-  File file = dir.openNextFile();
-  while(file){
-    if (output != "[") output += ',';
-    bool isDir = file.isDirectory();
-    output += "{\"type\":\"";
-    output += (isDir)?"dir":"file";
-    output += "\",\"name\":\"";
-    output += String(file.name()).substring(1);
-    output += "\"}";
-    if (levels) {
-        listDir(fs, file.path(), levels - 1);
-      }
-    dir.close();
-  }
-  
-  output += "]";
-  */
   webServer.send(200, "text/json", output);
 }
 #endif

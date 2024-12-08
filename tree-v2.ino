@@ -27,7 +27,7 @@ FASTLED_USING_NAMESPACE
   }
 
   #include <ESP8266WiFi.h>
-  //#include <mDNS.h>
+  #include <ESP8266mDNS.h>
   #include <ESP8266WebServer.h>
   #include <ESP8266HTTPUpdateServer.h>
   #define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
@@ -37,13 +37,16 @@ FASTLED_USING_NAMESPACE
 
 #elif defined(ESP32)
   #include <WiFi.h>
-  //#include <mDNS.h>
+  #include <ESPmDNS.h>
   #include <WebServer.h>
   #include <HTTPUpdateServer.h>
   #define HOSTNAME "Tree-ESP32-" ///< Hostname. The setup function adds the Chip ID at the end.
   WebServer webServer(80);
   HTTPUpdateServer httpUpdateServer;
+  uint32_t chipId = 0;
 #endif
+
+String hostname(HOSTNAME);
 
 #define WebSocketsServer_enable
 #if defined(WebSocketsServer_enable)
@@ -290,11 +293,17 @@ void setup() {
   LOG_DEBUG("Flash ID:", spi_flash_get_id());
   LOG_DEBUG("Flash Size:", ESP.getFlashChipRealSize());
   LOG_DEBUG("Vcc:", ESP.getVcc());
+
+  hostname += String(ESP.getChipId(), HEX);
 #elif defined(ESP32)
+  for (int i = 0; i < 17; i = i + 8) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+  hostname += (String)chipId;
   LOG_DEBUG("Heap:", esp_get_free_heap_size());
   LOG_DEBUG("CPU:", ESP.getCpuFreqMHz());
   LOG_DEBUG("SDK:", ESP.getSdkVersion());
-  //LOG_DEBUG("Chip ID:", ESP.getChipId());
+  LOG_DEBUG("Chip ID:", chipId);
   //LOG_DEBUG("Flash ID:", ESP_getFlashChipId());
   LOG_DEBUG("Flash Size:", ESP.getFlashChipSize());
   //LOG_DEBUG("Vcc:", ESP.getVcc());
@@ -333,20 +342,7 @@ void setup() {
   }
 
   // Set Hostname.
-  String hostname(HOSTNAME);
-  //hostname += String(ESP.getChipId(), HEX);
   WiFi.hostname(hostname);
-
-  char hostnameChar[hostname.length() + 1];
-  memset(hostnameChar, 0, hostname.length() + 1);
-
-  for (uint8_t i = 0; i < hostname.length(); i++)
-    hostnameChar[i] = hostname.charAt(i);
-
-  //MDNS.begin(hostnameChar);
-  //
-  //  // Add service to MDNS-SD
-  //MDNS.addService("http", "tcp", 80);
 
   // Print hostname.
   LOG_DEBUG("Hostname: ", hostname);
@@ -383,6 +379,16 @@ void setup() {
       WiFi.begin(ssid, password);
     }
     LOG_INFO("IP:", WiFi.localIP().toString());
+  }
+
+  if (!MDNS.begin(hostname)) {
+    LOG_ERROR("Error setting up MDNS responder!");
+  }
+  else{
+    LOG_DEBUG("MDNS responder started");
+    MDNS.addService("http", "tcp", 80);
+    MDNS.addServiceTxt("http", "tcp", "addresses", WiFi.localIP().toString());
+    MDNS.addServiceTxt("http", "tcp", "WebSocketsServerPort", "81");
   }
 
   httpUpdateServer.setup(&webServer);
