@@ -34,7 +34,7 @@ FASTLED_USING_NAMESPACE
   ESP8266WebServer webServer(80);
   ESP8266HTTPUpdateServer httpUpdateServer;
   #define IR_enable
-
+  #define DATA_PIN      13
 #elif defined(ESP32)
   #include <WiFi.h>
   #include <ESPmDNS.h>
@@ -44,6 +44,7 @@ FASTLED_USING_NAMESPACE
   WebServer webServer(80);
   HTTPUpdateServer httpUpdateServer;
   uint32_t chipId = 0;
+  #define DATA_PIN      18
 #endif
 
 String hostname(HOSTNAME);
@@ -85,14 +86,13 @@ const char* password = "";
 
 #include "FSBrowser.h"
 
-#define DATA_PIN      13
 #define LED_TYPE      WS2811
 // #define LED_TYPE      WS2812 //for WS2812 strips
 #define COLOR_ORDER   RGB
 // #define COLOR_ORDER   GRB //for WS2812 strips
 #define NUM_LEDS      300
 
-#define MILLI_AMPS         4000     // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
+#define MILLI_AMPS         15000     // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
 #define FRAMES_PER_SECOND  60 // here you can control the speed. With the Access Point / Web Server the animations run a bit slower.
 
 #include "Map.h"
@@ -279,6 +279,7 @@ void setup() {
   loadSettings();
 
   FastLED.setBrightness(brightness);
+  FastLED.show();
 
 #if defined(IR_enable)
   irReceiver.enableIRIn(); // Start the receiver
@@ -625,7 +626,7 @@ void loop() {
   delay(1000 / FRAMES_PER_SECOND);
 
   // insert a delay to keep the framerate modest
-  // FastLED.delay(1000 / FRAMES_PER_SECOND);
+ //FastLED.delay(1000 / FRAMES_PER_SECOND);
 }
 
 #if defined(WebSocketsServer_enable)
