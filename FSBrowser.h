@@ -50,6 +50,9 @@ bool handleFileRead(String path){
 }
 
 void handleFileUpload(){
+#ifndef FILE_WRITE
+#define FILE_WRITE "w"
+#endif
   if(webServer.uri() != "/edit") return;
   HTTPUpload& upload = webServer.upload();
   String filename = upload.filename;
