@@ -531,10 +531,6 @@ void setup() {
     webServer.send(200, "text/plain", "");
   }, handleFileUpload);
 
-  //webServer.on("/", []() {
-    //Serial.print(Get_http_content());
-    //webServer.send(200, "text/html", Get_http_content());
-  //});
   webServer.serveStatic("/", LittleFS, "/", "max-age=86400");
 
   webServer.begin();
