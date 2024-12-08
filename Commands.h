@@ -185,7 +185,7 @@ unsigned long decodeIRCode() {
     // delay(20);
 
     if (results.value != 0)
-      //LOG_DEBUG(results.value);
+      LOG_DEBUG((bool)results.value);
 
     // Prepare to receive the next IR code
     irReceiver.resume();

@@ -33,6 +33,7 @@ FASTLED_USING_NAMESPACE
   #define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
   ESP8266WebServer webServer(80);
   ESP8266HTTPUpdateServer httpUpdateServer;
+  #define IR_enable
 
 #elif defined(ESP32)
   #include <WiFi.h>
@@ -44,8 +45,8 @@ FASTLED_USING_NAMESPACE
   HTTPUpdateServer httpUpdateServer;
 #endif
 
-#define WebSocketsServer_enable false
-#if WebSocketsServer_enable
+#define WebSocketsServer_enable
+#if defined(WebSocketsServer_enable)
 #include <WebSocketsServer.h>
 WebSocketsServer webSocketsServer = WebSocketsServer(81);
 #endif
@@ -59,8 +60,8 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
 
 #include "Field.h"
 
-#define IR_enable false
-#if IR_enable
+//#define IR_enable //does not work with esp32 v3.x.x
+#if defined(IR_enable)
   #define RECV_PIN 2
   #include <IRremoteESP8266.h>
   #include <IRrecv.h>
@@ -276,36 +277,59 @@ void setup() {
 
   FastLED.setBrightness(brightness);
 
-#if IR_enable
+#if defined(IR_enable)
   irReceiver.enableIRIn(); // Start the receiver
 #endif
 
-  //LOG_DEBUG("Heap:",system_get_free_heap_size());
-  //LOG_DEBUG("Boot Vers:", system_get_boot_version());
-  //LOG_DEBUG("CPU:", system_get_cpu_freq());
-  //LOG_DEBUG("SDK:", system_get_sdk_version());
-  //LOG_DEBUG("Chip ID:", system_get_chip_id());
-  //LOG_DEBUG("Flash ID:", spi_flash_get_id());
-  //LOG_DEBUG("Flash Size:", ESP.getFlashChipRealSize());
+#if defined(ESP8266)
+  LOG_DEBUG("Heap:",system_get_free_heap_size());
+  LOG_DEBUG("Boot Vers:", system_get_boot_version());
+  LOG_DEBUG("CPU:", system_get_cpu_freq());
+  LOG_DEBUG("SDK:", system_get_sdk_version());
+  LOG_DEBUG("Chip ID:", system_get_chip_id());
+  LOG_DEBUG("Flash ID:", spi_flash_get_id());
+  LOG_DEBUG("Flash Size:", ESP.getFlashChipRealSize());
+  LOG_DEBUG("Vcc:", ESP.getVcc());
+#elif defined(ESP32)
+  LOG_DEBUG("Heap:", esp_get_free_heap_size());
+  LOG_DEBUG("CPU:", ESP.getCpuFreqMHz());
+  LOG_DEBUG("SDK:", ESP.getSdkVersion());
+  //LOG_DEBUG("Chip ID:", ESP.getChipId());
+  //LOG_DEBUG("Flash ID:", ESP_getFlashChipId());
+  LOG_DEBUG("Flash Size:", ESP.getFlashChipSize());
   //LOG_DEBUG("Vcc:", ESP.getVcc());
+#endif
 
-  LittleFS.begin();
-  {
+  bool FS_ERROR = LittleFS.begin();
+  if (!FS_ERROR) {
+    LOG_ERROR("Failed to mount file system", FS_ERROR);
+    LittleFS.format();
+  } else {
+    LOG_DEBUG("Mount file system", FS_ERROR);
 #if defined(ESP8266)
     Dir dir = LittleFS.openDir("/");
     while (dir.next()) {
       String fileName = dir.fileName();
       size_t fileSize = dir.fileSize();
-    //LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
-#elif defined(ESP32)
-    File dir = LittleFS.open("/");
-    while (dir.openNextFile()) {
-      String fileName = dir.getNextFileName();
-      size_t fileSize = dir.size();
-      //LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
-#endif
+      LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
     }
-    //LOG_DEBUG("\n");
+#elif defined(ESP32)
+    LOG_DEBUG("list /");
+    LittleFS.mkdir("/css");
+    LittleFS.mkdir("/js");
+    File dir = LittleFS.open("/");
+    File file = dir.openNextFile();
+    if (!file){
+      LOG_DEBUG("root is empty");
+    }
+    while (file) {
+      String fileName = file.name();
+      size_t fileSize = file.size();
+      LOG_DEBUG("FS File:", fileName.c_str(), "size:", String(fileSize).c_str());
+      file = dir.openNextFile();
+    }
+#endif
+    LOG_DEBUG("\n");
   }
 
   // Set Hostname.
@@ -325,7 +349,7 @@ void setup() {
   //MDNS.addService("http", "tcp", 80);
 
   // Print hostname.
-  //LOG_DEBUG("Hostname: ", hostname);
+  LOG_DEBUG("Hostname: ", hostname);
 
   if (apMode)
   {
@@ -348,16 +372,17 @@ void setup() {
 
     WiFi.softAP(AP_NameChar, WiFiAPPSK);
 
-    //LOG_DEBUG("Connect to Wi-Fi access point:", AP_NameString);
-    //LOG_DEBUG("and open http://192.168.4.1 in your browser");
+    LOG_DEBUG("Connect to Wi-Fi access point:", AP_NameString);
+    LOG_DEBUG("and open http://192.168.4.1 in your browser");
   }
   else
   {
     WiFi.mode(WIFI_STA);
-    //LOG_DEBUG("Connecting to", ssid);
+    LOG_DEBUG("Connecting to", ssid);
     if (String(WiFi.SSID()) != String(ssid)) {
       WiFi.begin(ssid, password);
     }
+    LOG_INFO("IP:", WiFi.localIP().toString());
   }
 
   httpUpdateServer.setup(&webServer);
@@ -507,12 +532,12 @@ void setup() {
   webServer.serveStatic("/", LittleFS, "/", "max-age=86400");
 
   webServer.begin();
-  //LOG_DEBUG("HTTP web server started");
+  LOG_DEBUG("HTTP web server started");
 
-#if WebSocketsServer_enable
+#if defined(WebSocketsServer_enable)
   webSocketsServer.begin();
   webSocketsServer.onEvent(webSocketEvent);
-  //LOG_DEBUG("Web socket server started");
+  LOG_DEBUG("Web socket server started");
 #endif
 
   autoPlayTimeout = millis() + (autoplayDuration * 1000);
@@ -531,7 +556,7 @@ void sendString(String value)
 void broadcastInt(String name, uint8_t value)
 {
   String json = "{\"name\":\"" + name + "\",\"value\":" + String(value) + "}";
-#if WebSocketsServer_enable
+#if defined(WebSocketsServer_enable)
   webSocketsServer.broadcastTXT(json);
 #endif
 }
@@ -539,7 +564,7 @@ void broadcastInt(String name, uint8_t value)
 void broadcastString(String name, String value)
 {
   String json = "{\"name\":\"" + name + "\",\"value\":\"" + String(value) + "\"}";
-#if WebSocketsServer_enable
+#if defined(WebSocketsServer_enable)
   webSocketsServer.broadcastTXT(json);
 #endif
 }
@@ -548,13 +573,13 @@ void loop() {
   // Add entropy to random number generator; we use a lot of it.
   random16_add_entropy(random(65535));
 
-#if WebSocketsServer_enable
+#if defined(WebSocketsServer_enable)
   webSocketsServer.loop();
 #endif
 
   webServer.handleClient();
 
-#if IR_enable
+#if defined(IR_enable)
   handleIrInput();
 #endif
 
@@ -566,7 +591,7 @@ void loop() {
   }
 
   //   EVERY_N_SECONDS(10) {
-  //     //LOG_DEBUG("Heap:", system_get_free_heap_size());
+  //     LOG_DEBUG("Heap:", system_get_free_heap_size());
   //   }
 
   // change to a new cpt-city gradient palette
@@ -601,18 +626,48 @@ void loop() {
   // FastLED.delay(1000 / FRAMES_PER_SECOND);
 }
 
-#if WebSocketsServer_enable
+#if defined(WebSocketsServer_enable)
+void hexDump(const void* mem, uint32_t len, uint8_t cols)
+{
+  #if defined(ESP8266)
+    const char* src = (const char*)mem;
+    os_printf("\n[HEXDUMP] Address: %p len: 0x%X (%d)", src, len, len);
+    while (len > 0)
+    {
+        uint32_t linesize = cols > len ? len : cols;
+        os_printf("\n[%p] 0x%04x: ", src, (int)(src - (const char*)mem));
+        for (uint32_t i = 0; i < linesize; i++)
+        {
+            os_printf("%02x ", *(src + i));
+        }
+        os_printf("  ");
+        for (uint32_t i = linesize; i < cols; i++)
+        {
+            os_printf("   ");
+        }
+        for (uint32_t i = 0; i < linesize; i++)
+        {
+            unsigned char c = *(src + i);
+            os_putc(isprint(c) ? c : '.');
+        }
+        src += linesize;
+        len -= linesize;
+        optimistic_yield(10000);
+    }
+    os_printf("\n");
+  #endif
+}
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
 
   switch (type) {
     case WStype_DISCONNECTED:
-      //LOG_DEBUG(num, " Disconnected!");
+      LOG_DEBUG((uint8_t)num, " Disconnected!");
       break;
 
     case WStype_CONNECTED:
       {
         IPAddress ip = webSocketsServer.remoteIP(num);
-        //LOG_DEBUG(num, "Connected from", ip[0], ip[1], ip[2], ip[3], "url:", payload);
+        LOG_DEBUG((uint8_t)num, "Connected from", ip[0], ip[1], ip[2], ip[3], "url:", (uint8_t)*payload);
 
         // send message to client
         webSocketsServer.sendTXT(num, "Connected");
@@ -620,18 +675,18 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
 
     case WStype_TEXT:
-      //LOG_DEBUG(num, "get Text:", payload);
+      LOG_DEBUG((uint8_t)num, "get Text:", (uint8_t)*payload);
 
       // send message to client
-      webSocketsServer.sendTXT(num, "message here");
+      webSocketsServer.sendTXT(num, payload);
 
       // send data to all connected clients
-      webSocketsServer.broadcastTXT("message here");
+      webSocketsServer.broadcastTXT(payload);
       break;
 
     case WStype_BIN:
-      //LOG_DEBUG(num, "get binary length:", length);
-      //hexdump(payload, length);
+      LOG_DEBUG((uint8_t)num, "get binary:", (uint8_t)*payload, "length:", (size_t)length);
+      hexDump(payload, length, length);
 
       // send message to client
       webSocketsServer.sendBIN(num, payload, length);
@@ -640,13 +695,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 }
 #endif
 
-#if IR_enable
+#if defined(IR_enable)
 void handleIrInput()
 {
   InputCommand command = readCommand(defaultHoldDelay);
 
   if (command != InputCommand::None) {
-    //LOG_DEBUG("command:", command);
+    LOG_DEBUG("command:", (int) command);
   }
 
   switch (command) {
@@ -968,6 +1023,8 @@ void setPattern(uint8_t value)
 {
   if (value >= patternCount)
     value = patternCount - 1;
+
+  LOG_DEBUG(patterns[value].name);
 
   currentPatternIndex = value;
 

@@ -2,17 +2,20 @@
 # upload the web app to the board
 
 # investigate using a single file to bring in the defaults
-# ip=$(< ip.txt)
+ip=$(< ip.txt)
 
-ip=${1:-"192.168.0.103"}
+#ip=${1:-"192.168.0.103"}
 url="http://$ip/edit"
 
-declare -a filenames=("css/styles.css"
-                     "js/app.js"
-                     "index.htm"
-                     "css/simple.css"
-                     "js/simple.js"
-                     "simple.htm")
+declare -a filenames=(
+  "css/styles.css"
+  "js/app.js"
+  "index.htm"
+  "css/simple.css"
+  "js/simple.js"
+  "simple.htm"
+  "edit.htm"
+)
 
 # "images/atom196.png"
 # "favicon.ico"

@@ -32,7 +32,7 @@ String getContentType(String filename){
 }
 
 bool handleFileRead(String path){
-  //LOG_DEBUG("handleFileRead:", path);
+  LOG_DEBUG("handleFileRead:", path);
   if(path.endsWith("/")) path += "index.htm";
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
@@ -42,36 +42,56 @@ bool handleFileRead(String path){
     File file = LittleFS.open(path, "r");
     size_t contentLength = webServer.streamFile(file, contentType);
     file.close();
-    //LOG_DEBUG("Send contentLength:", contentLength);
+    LOG_DEBUG("Send contentLength:", contentLength);
     return true;
   }
+  LOG_DEBUG("File not found:", pathWithGz);
   return false;
 }
 
 void handleFileUpload(){
   if(webServer.uri() != "/edit") return;
   HTTPUpload& upload = webServer.upload();
+  String filename = upload.filename;
+  if(!filename.startsWith("/")) {
+    LOG_DEBUG(filename);
+    filename = "/"+filename;
+    LOG_DEBUG(filename);
+  }
+  LOG_DEBUG(filename);
   if(upload.status == UPLOAD_FILE_START){
-    String filename = upload.filename;
-    if(!filename.startsWith("/")) filename = "/"+filename;
-    //LOG_DEBUG("handleFileUpload Name:", filename);
-    fsUploadFile = LittleFS.open(filename, "w");
-    filename = String();
+    LOG_DEBUG("handleFileUpload Name:", filename);
+    fsUploadFile = LittleFS.open(filename, FILE_WRITE);
+    if(fsUploadFile){
+      LOG_DEBUG("- succes to open file for writing:", filename);
+    } else{
+      LOG_ERROR("- failed to open file for writing:", filename);
+      return;
+    }
   } else if(upload.status == UPLOAD_FILE_WRITE){
-    //LOG_DEBUG("handleFileUpload Data:", upload.currentSize);
-    if(fsUploadFile)
-      fsUploadFile.write(upload.buf, upload.currentSize);
+    LOG_DEBUG(filename);
+    LOG_DEBUG("handleFileUpload Data:", upload.currentSize);
+    if(fsUploadFile){
+      if (fsUploadFile.write(upload.buf, upload.currentSize)) {
+        LOG_DEBUG("- file written");
+      } else {
+        LOG_ERROR("- write failed");
+      }
+    } else{
+      LOG_ERROR("- failed to open file for writing:", filename);
+      return;
+    }
   } else if(upload.status == UPLOAD_FILE_END){
     if(fsUploadFile)
       fsUploadFile.close();
-    //LOG_DEBUG("handleFileUpload Size:", upload.totalSize);
+    LOG_DEBUG("handleFileUpload Size:", upload.totalSize);
   }
 }
 
 void handleFileDelete(){
   if(webServer.args() == 0) return webServer.send(500, "text/plain", "BAD ARGS");
   String path = webServer.arg(0);
-  //LOG_DEBUG("handleFileDelete:", path);
+  LOG_DEBUG("handleFileDelete:", path);
   if(path == "/")
     return webServer.send(500, "text/plain", "BAD PATH");
   if(!LittleFS.exists(path))
@@ -85,7 +105,7 @@ void handleFileCreate(){
   if(webServer.args() == 0)
     return webServer.send(500, "text/plain", "BAD ARGS");
   String path = webServer.arg(0);
-  //LOG_DEBUG("handleFileCreate:", path);
+  LOG_DEBUG("handleFileCreate:", path);
   if(path == "/")
     return webServer.send(500, "text/plain", "BAD PATH");
   if(LittleFS.exists(path))
@@ -104,7 +124,7 @@ void handleFileList() {
   if(!webServer.hasArg("dir")) {webServer.send(500, "text/plain", "BAD ARGS"); return;}
   
   String path = webServer.arg("dir");
-  //LOG_DEBUG("handleFileList: ", path);
+  LOG_DEBUG("handleFileList: ", path);
   Dir dir = LittleFS.openDir(path);
   path = String();
 
@@ -125,28 +145,72 @@ void handleFileList() {
   webServer.send(200, "text/json", output);
 }
 #elif defined(ESP32)
+String listDir(fs::FS &fs, String dirname, uint8_t levels) {
+  LOG_DEBUG("Listing directory:", dirname);
+  File root = fs.open(dirname);
+  String output = "[";
+  File file = root.openNextFile();
+  while (file) {
+    if (output != "[") output += ',';
+    output += "{\"type\":\"";
+    if (file.isDirectory()) {
+      output += "dir";
+      output += "\",\"name\":\"";
+      output += String(file.name());
+      output += "\",\"content\":";
+      LOG_DEBUG("DIR:", file.name());
+      if (levels) {
+        output += listDir(fs, file.path(), levels - 1);
+      }
+    } else {
+      output += "file";
+      output += "\",\"name\":\"";
+      output += String(file.path());
+      LOG_DEBUG("FILE:", file.path(), "SIZE:", file.size());
+      output += "\"";
+    }
+    output += "}";
+    file = root.openNextFile();
+  }
+  output += "]";
+  return output;
+}
 void handleFileList() {
   if(!webServer.hasArg("dir")) {webServer.send(500, "text/plain", "BAD ARGS"); return;}
   
   String path = webServer.arg("dir");
-  //LOG_DEBUG("handleFileList: ", path);
   File dir = LittleFS.open(path);
-  path = String();
+  LOG_DEBUG("handleFileList: ", path, "dir:", dir);
+  if (!dir) {
+    LOG_ERROR("- failed to open directory");
+    webServer.send(500, "text/plain", "failed to open directory");
+    return;
+  }
+  if (!dir.isDirectory()) {
+    LOG_ERROR(" - not a directory");
+    webServer.send(500, "text/plain", "not a directory");
+    return;
+  }
+  String output = listDir(LittleFS, path, 1);
 
-  String output = "[";
-  while(dir.openNextFile()){
-    //File entry = dir.open("r");
+  /*String output = "[";
+  File file = dir.openNextFile();
+  while(file){
     if (output != "[") output += ',';
-    bool isDir = false;
+    bool isDir = file.isDirectory();
     output += "{\"type\":\"";
     output += (isDir)?"dir":"file";
     output += "\",\"name\":\"";
-    output += String(dir.name()).substring(1);
+    output += String(file.name()).substring(1);
     output += "\"}";
+    if (levels) {
+        listDir(fs, file.path(), levels - 1);
+      }
     dir.close();
   }
   
   output += "]";
+  */
   webServer.send(200, "text/json", output);
 }
 #endif
