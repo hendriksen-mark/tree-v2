@@ -139,7 +139,7 @@ void handleFileList() {
     output += "{\"type\":\"";
     output += (isDir)?"dir":"file";
     output += "\",\"name\":\"";
-    output += String(entry.name()).substring(1);
+    output += String(entry.name());
     output += "\"}";
     entry.close();
   }
