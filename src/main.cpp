@@ -33,7 +33,6 @@ FASTLED_USING_NAMESPACE
   #define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
   ESP8266WebServer webServer(80);
   ESP8266HTTPUpdateServer httpUpdateServer;
-  #define IR_enable
   #define DATA_PIN      13
 #elif defined(ESP32)
   #include <WiFi.h>
@@ -60,13 +59,13 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
 #include "GradientPalettes.h"
 #include <DebugLog.h>
 
-#define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
+#define DEBUGLOG_DEFAULT_LOG_LEVEL_DEBUG
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #include "Field.h"
 
-//#define IR_enable //does not work with esp32 v3.x.x
+#define IR_enable
 #if defined(IR_enable)
   #define RECV_PIN 2
   #include <IRremoteESP8266.h>
