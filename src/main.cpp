@@ -60,6 +60,8 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
 #include "GradientPalettes.h"
 #include <DebugLog.h>
 
+#define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
+
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #include "Field.h"
@@ -1364,7 +1366,6 @@ void setup() {
   //WiFi.setSleepMode(WIFI_NONE_SLEEP);
   
   Serial.begin(115200);
-  LOG_SET_LEVEL(DebugLogLevel::LVL_TRACE);
   delay(100);
   Serial.setDebugOutput(true);
 
