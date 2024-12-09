@@ -59,7 +59,7 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
 #include "GradientPalettes.h"
 #include <DebugLog.h>
 
-#define DEBUGLOG_DEFAULT_LOG_LEVEL_DEBUG
+#define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
