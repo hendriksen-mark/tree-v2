@@ -155,7 +155,7 @@ String listDir(fs::FS &fs, String dirname, uint8_t levels) {
     } else {
       output += "file";
       output += "\",\"name\":\"";
-      output += String(file.path());
+      output += String(file.name());
       LOG_DEBUG("FILE:", file.path(), "SIZE:", file.size());
       output += "\"";
     }

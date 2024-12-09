@@ -135,7 +135,7 @@ CRGBPalette16 gTargetPalette( gGradientPalettes[0] );
 
 CRGBPalette16 IceColors_p = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::Aqua, CRGB::White);
 
-uint8_t currentPatternIndex = 0; // Index number of which pattern is current
+int currentPatternIndex = 0; // Index number of which pattern is current
 uint8_t autoplay = 0;
 
 uint8_t autoplayDuration = 10;
@@ -1450,8 +1450,6 @@ void setup() {
     }
 #elif defined(ESP32)
     LOG_DEBUG("list /");
-    LittleFS.mkdir("/css");
-    LittleFS.mkdir("/js");
     File dir = LittleFS.open("/");
     File file = dir.openNextFile();
     if (!file){
@@ -1639,6 +1637,17 @@ void setup() {
     String value = webServer.arg("value");
     setAutoplayDuration(value.toInt());
     sendInt(autoplayDuration);
+  });
+
+  webServer.on("/FormatFS", HTTP_POST, []() {
+    if (LittleFS.format()) {
+      LOG_INFO("Format FS Ok");
+      webServer.send(200, "text/plain", "Ok");
+      ESP.restart();
+    } else {
+      LOG_INFO("Format FS Not Ok");
+      webServer.send(200, "text/plain", "Not Ok");
+    }
   });
 
   //list directory

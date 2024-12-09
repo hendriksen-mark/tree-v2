@@ -12,25 +12,36 @@ var postValueTimer = {};
 var ignoreColorChange = false;
 
 var patterns = [
+  "White Meteors",
+  "Rainbow Meteors",
+  "Palette Meteors",
   "Pride",
   "Pride 2",
-
   "Color Waves",
   "Color Waves 2",
-
   "Palette Waves",
-
+  "Northward Rainbow",
+  "Northeastward Rainbow",
+  "Eastward Rainbow",
+  "Southeastward Rainbow",
+  "Southward Rainbow",
+  "Southwestward Rainbow",
+  "Westward Rainbow",
+  "Northwestward Rainbow",
+  "Rotating Rainbow",
+  "Outward Rainbow",
+  "Inward Rainbow",
   "Falling Rainbow",
   "Rising Rainbow",
-
+  "Rotating Palette",
+  "Outward Palette",
+  "Inward Palette",
   "Falling Palette",
   "Rising Palette",
-
   "Rainbow Twinkles",
   "Snow Twinkles",
   "Cloud Twinkles",
   "Incandescent Twinkles",
-
   "Retro C9 Twinkles",
   "Red & White Twinkles",
   "Blue & White Twinkles",
@@ -45,9 +56,19 @@ var patterns = [
   "Fire Twinkles",
   "Cloud 2 Twinkles",
   "Ocean Twinkles",
-
+  "Palette Twinkles",
   "Candy Cane",
-
+  "Fire Noise",
+  "Fire Noise 2",
+  "Lava Noise",
+  "Rainbow Noise",
+  "Rainbow Stripe Noise",
+  "Party Noise",
+  "Forest Noise",
+  "Cloud Noise",
+  "Ocean Noise",
+  "Black & White Noise",
+  "Black & Blue Noise",
   "Rainbow",
   "Rainbow With Glitter",
   "Solid Rainbow",
@@ -56,7 +77,8 @@ var patterns = [
   "Beat",
   "Juggle",
   "Fire",
-  "Water"
+  "Water",
+  "Solid Color",
 ];
 
 var ws = new ReconnectingWebSocket('ws://' + address + ':81/', ['arduino']);
