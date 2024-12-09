@@ -45,7 +45,7 @@ bool handleFileRead(String path){
     LOG_DEBUG("Send contentLength:", contentLength);
     return true;
   }
-  LOG_DEBUG("File not found:", pathWithGz);
+  LOG_DEBUG("File not found:", path);
   return false;
 }
 
