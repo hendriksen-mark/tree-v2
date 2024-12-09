@@ -8,11 +8,11 @@ ip=$(< ip.txt)
 url="http://$ip/edit"
 
 declare -a filenames=(
-  "css/styles.css"
-  "js/app.js"
+  "styles.css"
+  "app.js"
   "index.htm"
-  "css/simple.css"
-  "js/simple.js"
+  "simple.css"
+  "simple.js"
   "simple.htm"
   "edit.htm"
 )
@@ -24,10 +24,10 @@ for filename in "${filenames[@]}"
 do
   # add --trace-ascii curl.log for logging
 
-  gzip -kf data/$filename
+  #gzip -kf data/$filename
 
   echo $filename
-  curl --form "file=@data/$filename.gz;filename=$filename.gz" $url
+  curl --form "file=@data/$filename;filename=$filename" $url
 
-  rm -f data/$filename.gz
+  #rm -f data/$filename.gz
 done
