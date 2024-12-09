@@ -115,4 +115,3 @@ void incandescentTwinkles()
   gCurrentPalette = CRGBPalette16( l, l, l, l, l, l, l, l, l, l, l, l, l, l, l, l );
   colortwinkles();
 }
-

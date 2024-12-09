@@ -89,15 +89,17 @@ uint8_t coolLikeIncandescent = 1;
 
 CRGBPalette16 twinkleFoxPalette;
 
-// This function is like 'triwave8', which produces a
-// symmetrical up-and-down triangle sawtooth waveform, except that this
-// function produces a triangle wave with a faster attack and a slower decay:
-//
-//     / \
-//    /     \
-//   /         \
-//  /             \
-//
+/**
+ This function is like 'triwave8', which produces a
+ symmetrical up-and-down triangle sawtooth waveform, except that this
+ function produces a triangle wave with a faster attack and a slower decay:
+
+     / \
+    /   \
+   /     \
+  /       \
+
+*/
 
 uint8_t attackDecayWave8( uint8_t i)
 {

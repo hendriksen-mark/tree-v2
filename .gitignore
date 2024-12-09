@@ -1,6 +1,7 @@
+.pio
 # mac
 .DS_Store
 *.log
 *.gz
 build/
-/.vscode
+.vscode
