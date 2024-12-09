@@ -57,32 +57,19 @@ void handleFileUpload(){
   HTTPUpload& upload = webServer.upload();
   String filename = upload.filename;
   if(!filename.startsWith("/")) {
-    LOG_DEBUG(filename);
     filename = "/"+filename;
-    LOG_DEBUG(filename);
   }
-  LOG_DEBUG(filename);
   if(upload.status == UPLOAD_FILE_START){
     LOG_DEBUG("handleFileUpload Name:", filename);
     fsUploadFile = LittleFS.open(filename, FILE_WRITE);
-    if(fsUploadFile){
-      LOG_DEBUG("- succes to open file for writing:", filename);
-    } else{
+    if(!fsUploadFile){
       LOG_ERROR("- failed to open file for writing:", filename);
       return;
     }
   } else if(upload.status == UPLOAD_FILE_WRITE){
-    LOG_DEBUG(filename);
     LOG_DEBUG("handleFileUpload Data:", upload.currentSize);
-    if(fsUploadFile){
-      if (fsUploadFile.write(upload.buf, upload.currentSize)) {
-        LOG_DEBUG("- file written");
-      } else {
+    if (!fsUploadFile.write(upload.buf, upload.currentSize)) {
         LOG_ERROR("- write failed");
-      }
-    } else{
-      LOG_ERROR("- failed to open file for writing:", filename);
-      return;
     }
   } else if(upload.status == UPLOAD_FILE_END){
     if(fsUploadFile)

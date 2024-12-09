@@ -27,6 +27,8 @@ enum class InputCommand {
   PlayMode,
   Palette,
   Power,
+  PowerOn,
+  PowerOff,
   BrightnessUp,
   BrightnessDown,
 
@@ -168,9 +170,37 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_BABY_BLUE       16775175
 #define IRCODE_ETOPXIZU_LIGHT_BLUE      16767015
 
+// IR Raw Key Codes for Adafruit remote
+#define IRCODE_B_K_LIGHT_HELD             0xFFFFFFFFFFFFFFFF // 4294967295
+#define IRCODE_B_K_LIGHT_BRIGHTNESS_UP    0xF700FF // 16597183
+#define IRCODE_B_K_LIGHT_BRIGHTNESS_DOWN  0xF7807F // 16613503
+#define IRCODE_B_K_LIGHT_OFF              0xF740BF // 16580863
+#define IRCODE_B_K_LIGHT_ON               0xF7C03F // 16589023
+#define IRCODE_B_K_LIGHT_RED              0xF720DF // 16621663
+#define IRCODE_B_K_LIGHT_RED_ORANGE       0xF710EF // 16605343
+#define IRCODE_B_K_LIGHT_ORANGE           0xF730CF // 16584943
+#define IRCODE_B_K_LIGHT_YELLOW_ORANGE    0xF708F7 // 16617583
+#define IRCODE_B_K_LIGHT_YELLOW           0xF728D7 // 16601263
+#define IRCODE_B_K_LIGHT_GREEN            0xF7A05F // 16593103
+#define IRCODE_B_K_LIGHT_LIME             0xF7906F // 16625743
+#define IRCODE_B_K_LIGHT_AQUA             0xF7B04F // 16593103
+#define IRCODE_B_K_LIGHT_TEAL             0xF78877 // 16609423
+#define IRCODE_B_K_LIGHT_NAVY             0xF7A857 // 16582903
+#define IRCODE_B_K_LIGHT_BLUE             0xF7609F // 16615543
+#define IRCODE_B_K_LIGHT_ROYAL_BLUE       0xF750AF // 16599223
+#define IRCODE_B_K_LIGHT_PURPLE           0xF7708F // 16591063
+#define IRCODE_B_K_LIGHT_INDIGO           0xF748B7 // 16623703
+#define IRCODE_B_K_LIGHT_PINK             0xF76897 // 16607383
+#define IRCODE_B_K_LIGHT_WHITE            0xF7E01F // 16586983
+#define IRCODE_B_K_LIGHT_FLASH            0xF7D02F // 16619623
+#define IRCODE_B_K_LIGHT_STROBE           0xF7F00F // 16603303
+#define IRCODE_B_K_LIGHT_FADE             0xF7C837 // 16603303
+#define IRCODE_B_K_LIGHT_SMOOTH           0xF7E817 // 16603303
+
 bool sparkfunRemoteEnabled = true;
 bool adafruitRemoteEnabled = true;
 bool etopxizuRemoteEnabled = true;
+bool B_K_LIGHTRemoteEnabled = true;
 
 // Low level IR code reading function
 // Function will return 0 if no IR code available
@@ -469,6 +499,64 @@ InputCommand getCommand(unsigned long input) {
         return InputCommand::BabyBlue;
       case IRCODE_ETOPXIZU_LIGHT_BLUE:
         return InputCommand::LightBlue;
+    }
+  }
+
+  if (B_K_LIGHTRemoteEnabled) {
+    switch (input) {
+      case IRCODE_B_K_LIGHT_OFF:
+        return InputCommand::PowerOff;
+      case IRCODE_B_K_LIGHT_ON:
+        return InputCommand::PowerOn;
+
+      case IRCODE_B_K_LIGHT_BRIGHTNESS_UP:
+        return InputCommand::BrightnessUp;
+      case IRCODE_B_K_LIGHT_BRIGHTNESS_DOWN:
+        return InputCommand::BrightnessDown;
+
+      case IRCODE_B_K_LIGHT_RED:
+        return InputCommand::Red;
+      case IRCODE_B_K_LIGHT_RED_ORANGE:
+        return InputCommand::RedOrange;
+      case IRCODE_B_K_LIGHT_ORANGE:
+        return InputCommand::Orange;
+      case IRCODE_B_K_LIGHT_YELLOW_ORANGE:
+        return InputCommand::YellowOrange;
+      case IRCODE_B_K_LIGHT_YELLOW:
+        return InputCommand::Yellow;
+
+      case IRCODE_B_K_LIGHT_GREEN:
+        return InputCommand::Lime;
+      case IRCODE_B_K_LIGHT_LIME:
+        return InputCommand::Green;
+      case IRCODE_B_K_LIGHT_AQUA:
+        return InputCommand::Aqua;
+      case IRCODE_B_K_LIGHT_TEAL:
+        return InputCommand::Teal;
+      case IRCODE_B_K_LIGHT_NAVY:
+        return InputCommand::Navy;
+
+      case IRCODE_B_K_LIGHT_BLUE:
+        return InputCommand::Blue;
+      case IRCODE_B_K_LIGHT_ROYAL_BLUE:
+        return InputCommand::RoyalBlue;
+      case IRCODE_B_K_LIGHT_PURPLE:
+        return InputCommand::Purple;
+      case IRCODE_B_K_LIGHT_INDIGO:
+        return InputCommand::Indigo;
+      case IRCODE_B_K_LIGHT_PINK:
+        return InputCommand::Pink;
+
+      case IRCODE_B_K_LIGHT_WHITE:
+        return InputCommand::White;
+      case IRCODE_B_K_LIGHT_FLASH:
+        return InputCommand::Up;
+      case IRCODE_B_K_LIGHT_STROBE:
+        return InputCommand::Down;
+      case IRCODE_B_K_LIGHT_FADE:
+        return InputCommand::PlayMode;
+      case IRCODE_B_K_LIGHT_SMOOTH:
+        return InputCommand::Palette;
     }
   }
 

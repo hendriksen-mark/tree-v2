@@ -33,7 +33,8 @@ FASTLED_USING_NAMESPACE
   #define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
   ESP8266WebServer webServer(80);
   ESP8266HTTPUpdateServer httpUpdateServer;
-  #define DATA_PIN      13
+  #define DATA_PIN 13 //led
+  #define RECV_PIN 2  //ir
 #elif defined(ESP32)
   #include <WiFi.h>
   #include <ESPmDNS.h>
@@ -43,7 +44,8 @@ FASTLED_USING_NAMESPACE
   WebServer webServer(80);
   HTTPUpdateServer httpUpdateServer;
   uint32_t chipId = 0;
-  #define DATA_PIN      18
+  #define DATA_PIN 18 //led
+  #define RECV_PIN 5  //ir
 #endif
 
 String hostname(HOSTNAME);
@@ -59,15 +61,12 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
 #include "GradientPalettes.h"
 #include <DebugLog.h>
 
-#define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
-
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #include "Field.h"
 
 #define IR_enable
 #if defined(IR_enable)
-  #define RECV_PIN 2
   #include <IRremoteESP8266.h>
   #include <IRrecv.h>
   #include <IRutils.h>
@@ -276,6 +275,8 @@ void setAutoplay(uint8_t value)
 {
   autoplay = value == 0 ? 0 : 1;
 
+  LOG_DEBUG(autoplay);
+
   EEPROM.write(6, autoplay);
   EEPROM.commit();
 
@@ -285,6 +286,8 @@ void setAutoplay(uint8_t value)
 void setAutoplayDuration(uint8_t value)
 {
   autoplayDuration = value;
+
+  LOG_DEBUG(autoplayDuration);
 
   EEPROM.write(7, autoplayDuration);
   EEPROM.commit();
@@ -960,6 +963,8 @@ void setPower(uint8_t value)
 {
   power = value == 0 ? 0 : 1;
 
+  LOG_DEBUG(power);
+
   EEPROM.write(5, power);
   EEPROM.commit();
 
@@ -974,6 +979,8 @@ void adjustBrightness(bool up)
     brightnessIndex--;
 
   brightness = brightnessMap[brightnessIndex];
+
+  LOG_DEBUG(brightness);
 
   FastLED.setBrightness(brightness);
 
@@ -990,6 +997,7 @@ void setBrightness(uint8_t value)
   else if (value < 0) value = 0;
 
   brightness = value;
+  LOG_DEBUG(brightness);
 
   FastLED.setBrightness(brightness);
 
@@ -1040,6 +1048,8 @@ void adjustPattern(bool up)
   if (currentPatternIndex >= patternCount)
     currentPatternIndex = 0;
 
+  LOG_DEBUG(patterns[currentPatternIndex].name);
+
   if (autoplay == 0) {
     EEPROM.write(1, currentPatternIndex);
     EEPROM.commit();
@@ -1060,6 +1070,8 @@ void adjustSpeed(bool up)
     speed = 0;
   if (speed >= 255)
     speed = 255;
+  
+  LOG_DEBUG(speed);
 
   EEPROM.write(12, speed);
   EEPROM.commit();
@@ -1070,6 +1082,8 @@ void adjustSpeed(bool up)
 void setSolidColor(uint8_t r, uint8_t g, uint8_t b)
 {
   solidColor = CRGB(r, g, b);
+
+  LOG_DEBUG("Red:", r, "Green:", g, "Blue:", b);
 
   EEPROM.write(2, r);
   EEPROM.write(3, g);
@@ -1165,6 +1179,14 @@ void handleIrInput()
       }
     case InputCommand::Power: {
         setPower(power == 0 ? 1 : 0);
+        break;
+      }
+    case InputCommand::PowerOn: {
+        setPower(1);
+        break;
+      }
+    case InputCommand::PowerOff: {
+        setPower(0);
         break;
       }
     case InputCommand::BrightnessUp: {
@@ -1363,6 +1385,7 @@ void handleIrInput()
 
 void setup() {
   //WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  LOG_SET_LEVEL(DebugLogLevel::LVL_TRACE);
   
   Serial.begin(115200);
   delay(100);
@@ -1461,7 +1484,7 @@ void setup() {
     //String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
     //               String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
     //macID.toUpperCase();
-    String AP_NameString = "ESP8266-";
+    String AP_NameString = hostname;
 
     char AP_NameChar[AP_NameString.length() + 1];
     memset(AP_NameChar, 0, AP_NameString.length() + 1);
