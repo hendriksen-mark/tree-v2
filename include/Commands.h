@@ -170,7 +170,7 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_BABY_BLUE       16775175
 #define IRCODE_ETOPXIZU_LIGHT_BLUE      16767015
 
-// IR Raw Key Codes for Adafruit remote
+// IR Raw Key Codes for B_K_LIGHT remote
 #define IRCODE_B_K_LIGHT_HELD             0xFFFFFFFFFFFFFFFF // 4294967295
 #define IRCODE_B_K_LIGHT_BRIGHTNESS_UP    0xF700FF // 16597183
 #define IRCODE_B_K_LIGHT_BRIGHTNESS_DOWN  0xF7807F // 16613503
@@ -292,7 +292,7 @@ unsigned long readIRCode(unsigned int holdDelay) {
 
   unsigned int heldTime = 0;
 
-  if (irCode == IRCODE_SPARKFUN_HELD || irCode == IRCODE_ADAFRUIT_HELD) {
+  if (irCode == IRCODE_SPARKFUN_HELD || irCode == IRCODE_ADAFRUIT_HELD || irCode == IRCODE_B_K_LIGHT_HELD) {
     // has the hold delay passed?
     heldTime = millis() - holdStartTime;
     if (heldTime >= holdDelay) {
