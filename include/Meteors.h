@@ -8,7 +8,7 @@ struct Meteor {
 const uint8_t meteorCount = 1;
 Meteor meteors[meteorCount];
 
-uint8_t getMeteorLedIndexAndUpdate(uint8_t meteorIndex) {
+uint16_t getMeteorLedIndexAndUpdate(uint8_t meteorIndex) {
   Meteor meteor = meteors[meteorIndex];
 
   uint8_t i = getNearestToAngleAndLevel(meteor.angle, meteor.level);
