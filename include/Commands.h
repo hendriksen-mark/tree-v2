@@ -252,87 +252,6 @@ bool isHolding = false;
 unsigned int zeroStartTime = 0;
 unsigned int zeroDelay = 120;
 
-unsigned long readIRCode(unsigned int holdDelay) {
-  // read the raw code from the sensor
-  unsigned long irCode = readIRCode();
-
-  //LOG_DEBUG(millis());
-  //LOG_DEBUG("\t");
-  //LOG_DEBUG(irCode);
-
-  // don't return a short click until we know it's not a long hold
-  // we'll have to wait for holdDelay ms to pass before returning a non-zero IR code
-  // then, after that delay, as long as the button is held, we can keep returning the code
-  // every time until it's released
-
-  // the ir remote only sends codes every 107 ms or so (avg 106.875, max 111, min 102),
-  // so the ir sensor will return 0 even if a button is held
-  // so we have to wait longer than that before returning a non-zero code
-  // in order to detect that a button has been released and is no longer held
-
-  // only reset after we've gotten 0 back for more than the ir remote send interval
-  unsigned int zeroTime = 0;
-
-  if (irCode == 0) {
-    zeroTime = millis() - zeroStartTime;
-    if (zeroTime >= zeroDelay && lastIrCode != 0) {
-      //LOG_DEBUG("zero delay has elapsed, returning last ir code");
-      // the button has been released for longer than the zero delay
-      // start over delays over and return the last code
-      irCode = lastIrCode;
-      lastIrCode = 0;
-      return irCode;
-    }
-
-    return 0;
-  }
-
-  // reset the zero timer every time a non-zero code is read
-  zeroStartTime = millis();
-
-  unsigned int heldTime = 0;
-
-  if (irCode == IRCODE_SPARKFUN_HELD || irCode == IRCODE_ADAFRUIT_HELD || irCode == IRCODE_B_K_LIGHT_HELD) {
-    // has the hold delay passed?
-    heldTime = millis() - holdStartTime;
-    if (heldTime >= holdDelay) {
-      isHolding = true;
-      //LOG_DEBUG("hold delay has elapsed, returning last ir code");
-      return lastIrCode;
-    }
-    else if (holdStartTime == 0) {
-      isHolding = false;
-      holdStartTime = millis();
-    }
-  }
-  else {
-    // not zero, not IRCODE_SPARKFUN_HELD
-    // store it for use later, until the hold and zero delays have elapsed
-    holdStartTime = millis();
-    isHolding = false;
-    lastIrCode = irCode;
-    return 0;
-  }
-
-  return 0;
-}
-
-void heldButtonHasBeenHandled() {
-  lastIrCode = 0;
-  isHolding = false;
-  holdStartTime = 0;
-}
-
-unsigned long waitForIRCode() {
-
-  unsigned long irCode = readIRCode();
-  while ((irCode == 0) || (irCode == 0xFFFFFFFF)) {
-    delay(200);
-    irCode = readIRCode();
-  }
-  return irCode;
-}
-
 InputCommand getCommand(unsigned long input) {
   if (adafruitRemoteEnabled) {
     switch (input) {
@@ -561,6 +480,98 @@ InputCommand getCommand(unsigned long input) {
   }
 
   return InputCommand::None;
+}
+
+unsigned long readIRCode(unsigned int holdDelay) {
+  // read the raw code from the sensor
+  unsigned long irCode = readIRCode();
+
+  //LOG_DEBUG(millis());
+  //LOG_DEBUG("\t");
+  //LOG_DEBUG(irCode);
+
+  // don't return a short click until we know it's not a long hold
+  // we'll have to wait for holdDelay ms to pass before returning a non-zero IR code
+  // then, after that delay, as long as the button is held, we can keep returning the code
+  // every time until it's released
+
+  // the ir remote only sends codes every 107 ms or so (avg 106.875, max 111, min 102),
+  // so the ir sensor will return 0 even if a button is held
+  // so we have to wait longer than that before returning a non-zero code
+  // in order to detect that a button has been released and is no longer held
+
+  // only reset after we've gotten 0 back for more than the ir remote send interval
+  unsigned int zeroTime = 0;
+
+  if (irCode == 0) {
+    zeroTime = millis() - zeroStartTime;
+    if (zeroTime >= zeroDelay && lastIrCode != 0) {
+      //LOG_DEBUG("zero delay has elapsed, returning last ir code");
+      // the button has been released for longer than the zero delay
+      // start over delays over and return the last code
+      irCode = lastIrCode;
+      lastIrCode = 0;
+      return irCode;
+    }
+
+    return 0;
+  }
+
+  // reset the zero timer every time a non-zero code is read
+  zeroStartTime = millis();
+
+  unsigned int heldTime = 0;
+
+  if (irCode == IRCODE_SPARKFUN_HELD || irCode == IRCODE_ADAFRUIT_HELD || irCode == IRCODE_B_K_LIGHT_HELD) {
+    switch (getCommand(lastIrCode)) {
+      case InputCommand::BlueDown:
+      case InputCommand::BlueUp:
+      case InputCommand::GreenDown:
+      case InputCommand::GreenUp:
+      case InputCommand::RedDown:
+      case InputCommand::RedUp:
+      case InputCommand::BrightnessDown:
+      case InputCommand::BrightnessUp: {
+        // has the hold delay passed?
+        heldTime = millis() - holdStartTime;
+        if (heldTime >= holdDelay) {
+          isHolding = true;
+          //LOG_DEBUG("hold delay has elapsed, returning last ir code");
+          return lastIrCode;
+        }
+        else if (holdStartTime == 0) {
+          isHolding = false;
+          holdStartTime = millis();
+        }
+      }
+    }
+  }
+  else {
+    // not zero, not IRCODE_SPARKFUN_HELD
+    // store it for use later, until the hold and zero delays have elapsed
+    holdStartTime = millis();
+    isHolding = false;
+    lastIrCode = irCode;
+    return 0;
+  }
+
+  return 0;
+}
+
+void heldButtonHasBeenHandled() {
+  lastIrCode = 0;
+  isHolding = false;
+  holdStartTime = 0;
+}
+
+unsigned long waitForIRCode() {
+
+  unsigned long irCode = readIRCode();
+  while ((irCode == 0) || (irCode == 0xFFFFFFFF)) {
+    delay(200);
+    irCode = readIRCode();
+  }
+  return irCode;
 }
 
 InputCommand readCommand() {
