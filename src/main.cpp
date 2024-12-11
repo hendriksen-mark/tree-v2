@@ -661,7 +661,7 @@ void heatMap(CRGBPalette16 palette, bool up)
   random16_add_entropy(random(256));
 
   // Array of temperature readings at each simulation cell
-  static byte heat[NUM_LEDS];
+  static uint16_t heat[NUM_LEDS];
 
   byte colorindex;
 
@@ -947,7 +947,7 @@ PatternAndNameList patterns = {
 };
 
 const uint8_t patternCount = ARRAY_SIZE(patterns);
-extern const uint8_t gGradientPaletteCount;
+extern const uint16_t gGradientPaletteCount;
 
 #include "Fields.h"
 
