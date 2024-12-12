@@ -33,8 +33,6 @@ FASTLED_USING_NAMESPACE
   #define HOSTNAME "Tree-ESP8266-" ///< Hostname. The setup function adds the Chip ID at the end.
   ESP8266WebServer webServer(80);
   ESP8266HTTPUpdateServer httpUpdateServer;
-  #define DATA_PIN 13 //led
-  #define RECV_PIN 2  //ir
 #elif defined(ESP32)
   #include <WiFi.h>
   #include <ESPmDNS.h>
@@ -44,13 +42,12 @@ FASTLED_USING_NAMESPACE
   WebServer webServer(80);
   HTTPUpdateServer httpUpdateServer;
   uint32_t chipId = 0;
-  #define DATA_PIN 18 //led
-  #define RECV_PIN 5  //ir
 #endif
+
+#include "user_info.h"
 
 String hostname(HOSTNAME);
 
-#define WebSocketsServer_enable
 #if defined(WebSocketsServer_enable)
 #include <WebSocketsServer.h>
 WebSocketsServer webSocketsServer = WebSocketsServer(81);
@@ -65,7 +62,6 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
 
 #include "Field.h"
 
-#define IR_enable
 #if defined(IR_enable)
   #include <IRremoteESP8266.h>
   #include <IRrecv.h>
@@ -74,18 +70,7 @@ WebSocketsServer webSocketsServer = WebSocketsServer(81);
   #include "Commands.h"
 #endif
 
-#include "wifi_info.h"
-
 #include "FSBrowser.h"
-
-#define LED_TYPE      WS2811
-// #define LED_TYPE      WS2812 //for WS2812 strips
-#define COLOR_ORDER   RGB
-// #define COLOR_ORDER   GRB //for WS2812 strips
-#define NUM_LEDS      300
-
-#define MILLI_AMPS         15000     // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
-#define FRAMES_PER_SECOND  60 // here you can control the speed. With the Access Point / Web Server the animations run a bit slower.
 
 #include "Map.h"
 
@@ -96,22 +81,6 @@ uint8_t patternIndex = 0;
 const uint8_t brightnessCount = 5;
 uint8_t brightnessMap[brightnessCount] = { 16, 32, 64, 128, 255 };
 uint8_t brightnessIndex = 0;
-
-// ten seconds per color palette makes a good demo
-// 20-120 is better for deployment
-uint8_t secondsPerPalette = 10;
-
-// COOLING: How much does the air cool as it rises?
-// Less cooling = taller flames.  More cooling = shorter flames.
-// Default 50, suggested range 20-100
-uint8_t cooling = 49;
-
-// SPARKING: What chance (out of 255) is there that a new spark will be lit?
-// Higher chance = more roaring fire.  Lower chance = more flickery fire.
-// Default 120, suggested range 50-200.
-uint8_t sparking = 60;
-
-uint8_t speed = 30;
 
 ///////////////////////////////////////////////////////////////////////
 
