@@ -513,6 +513,5 @@ const TProgmemRGBGradientPaletteRef gGradientPalettes[] = {
 
 
 // Count of how many cpt-city gradients are defined:
-const uint8_t gGradientPaletteCount =
+const uint16_t gGradientPaletteCount =
   sizeof( gGradientPalettes) / sizeof( TProgmemRGBGradientPaletteRef );
-

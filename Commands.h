@@ -27,6 +27,8 @@ enum class InputCommand {
   PlayMode,
   Palette,
   Power,
+  PowerOn,
+  PowerOff,
   BrightnessUp,
   BrightnessDown,
 
@@ -168,9 +170,37 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_BABY_BLUE       16775175
 #define IRCODE_ETOPXIZU_LIGHT_BLUE      16767015
 
+// IR Raw Key Codes for B_K_LIGHT remote
+#define IRCODE_B_K_LIGHT_HELD             0xFFFFFFFFFFFFFFFF
+#define IRCODE_B_K_LIGHT_BRIGHTNESS_UP    0xF700FF
+#define IRCODE_B_K_LIGHT_BRIGHTNESS_DOWN  0xF7807F
+#define IRCODE_B_K_LIGHT_OFF              0xF740BF
+#define IRCODE_B_K_LIGHT_ON               0xF7C03F
+#define IRCODE_B_K_LIGHT_RED              0xF720DF
+#define IRCODE_B_K_LIGHT_RED_ORANGE       0xF710EF
+#define IRCODE_B_K_LIGHT_ORANGE           0xF730CF
+#define IRCODE_B_K_LIGHT_YELLOW_ORANGE    0xF708F7
+#define IRCODE_B_K_LIGHT_YELLOW           0xF728D7
+#define IRCODE_B_K_LIGHT_GREEN            0xF7A05F
+#define IRCODE_B_K_LIGHT_LIME             0xF7906F
+#define IRCODE_B_K_LIGHT_AQUA             0xF7B04F
+#define IRCODE_B_K_LIGHT_TEAL             0xF78877
+#define IRCODE_B_K_LIGHT_NAVY             0xF7A857
+#define IRCODE_B_K_LIGHT_BLUE             0xF7609F
+#define IRCODE_B_K_LIGHT_ROYAL_BLUE       0xF750AF
+#define IRCODE_B_K_LIGHT_PURPLE           0xF7708F
+#define IRCODE_B_K_LIGHT_INDIGO           0xF748B7
+#define IRCODE_B_K_LIGHT_PINK             0xF76897
+#define IRCODE_B_K_LIGHT_WHITE            0xF7E01F
+#define IRCODE_B_K_LIGHT_FLASH            0xF7D02F
+#define IRCODE_B_K_LIGHT_STROBE           0xF7F00F
+#define IRCODE_B_K_LIGHT_FADE             0xF7C837
+#define IRCODE_B_K_LIGHT_SMOOTH           0xF7E817
+
 bool sparkfunRemoteEnabled = true;
 bool adafruitRemoteEnabled = true;
 bool etopxizuRemoteEnabled = true;
+bool B_K_LIGHTRemoteEnabled = true;
 
 // Low level IR code reading function
 // Function will return 0 if no IR code available
@@ -221,87 +251,6 @@ bool isHolding = false;
 
 unsigned int zeroStartTime = 0;
 unsigned int zeroDelay = 120;
-
-unsigned long readIRCode(unsigned int holdDelay) {
-  // read the raw code from the sensor
-  unsigned long irCode = readIRCode();
-
-  //LOG_DEBUG(millis());
-  //LOG_DEBUG("\t");
-  //LOG_DEBUG(irCode);
-
-  // don't return a short click until we know it's not a long hold
-  // we'll have to wait for holdDelay ms to pass before returning a non-zero IR code
-  // then, after that delay, as long as the button is held, we can keep returning the code
-  // every time until it's released
-
-  // the ir remote only sends codes every 107 ms or so (avg 106.875, max 111, min 102),
-  // so the ir sensor will return 0 even if a button is held
-  // so we have to wait longer than that before returning a non-zero code
-  // in order to detect that a button has been released and is no longer held
-
-  // only reset after we've gotten 0 back for more than the ir remote send interval
-  unsigned int zeroTime = 0;
-
-  if (irCode == 0) {
-    zeroTime = millis() - zeroStartTime;
-    if (zeroTime >= zeroDelay && lastIrCode != 0) {
-      //LOG_DEBUG("zero delay has elapsed, returning last ir code");
-      // the button has been released for longer than the zero delay
-      // start over delays over and return the last code
-      irCode = lastIrCode;
-      lastIrCode = 0;
-      return irCode;
-    }
-
-    return 0;
-  }
-
-  // reset the zero timer every time a non-zero code is read
-  zeroStartTime = millis();
-
-  unsigned int heldTime = 0;
-
-  if (irCode == IRCODE_SPARKFUN_HELD || irCode == IRCODE_ADAFRUIT_HELD) {
-    // has the hold delay passed?
-    heldTime = millis() - holdStartTime;
-    if (heldTime >= holdDelay) {
-      isHolding = true;
-      //LOG_DEBUG("hold delay has elapsed, returning last ir code");
-      return lastIrCode;
-    }
-    else if (holdStartTime == 0) {
-      isHolding = false;
-      holdStartTime = millis();
-    }
-  }
-  else {
-    // not zero, not IRCODE_SPARKFUN_HELD
-    // store it for use later, until the hold and zero delays have elapsed
-    holdStartTime = millis();
-    isHolding = false;
-    lastIrCode = irCode;
-    return 0;
-  }
-
-  return 0;
-}
-
-void heldButtonHasBeenHandled() {
-  lastIrCode = 0;
-  isHolding = false;
-  holdStartTime = 0;
-}
-
-unsigned long waitForIRCode() {
-
-  unsigned long irCode = readIRCode();
-  while ((irCode == 0) || (irCode == 0xFFFFFFFF)) {
-    delay(200);
-    irCode = readIRCode();
-  }
-  return irCode;
-}
 
 InputCommand getCommand(unsigned long input) {
   if (adafruitRemoteEnabled) {
@@ -472,7 +421,157 @@ InputCommand getCommand(unsigned long input) {
     }
   }
 
+  if (B_K_LIGHTRemoteEnabled) {
+    switch (input) {
+      case IRCODE_B_K_LIGHT_OFF:
+        return InputCommand::PowerOff;
+      case IRCODE_B_K_LIGHT_ON:
+        return InputCommand::PowerOn;
+
+      case IRCODE_B_K_LIGHT_BRIGHTNESS_UP:
+        return InputCommand::BrightnessUp;
+      case IRCODE_B_K_LIGHT_BRIGHTNESS_DOWN:
+        return InputCommand::BrightnessDown;
+
+      case IRCODE_B_K_LIGHT_RED:
+        return InputCommand::Red;
+      case IRCODE_B_K_LIGHT_RED_ORANGE:
+        return InputCommand::RedOrange;
+      case IRCODE_B_K_LIGHT_ORANGE:
+        return InputCommand::Orange;
+      case IRCODE_B_K_LIGHT_YELLOW_ORANGE:
+        return InputCommand::YellowOrange;
+      case IRCODE_B_K_LIGHT_YELLOW:
+        return InputCommand::Yellow;
+
+      case IRCODE_B_K_LIGHT_GREEN:
+        return InputCommand::Lime;
+      case IRCODE_B_K_LIGHT_LIME:
+        return InputCommand::Green;
+      case IRCODE_B_K_LIGHT_AQUA:
+        return InputCommand::Aqua;
+      case IRCODE_B_K_LIGHT_TEAL:
+        return InputCommand::Teal;
+      case IRCODE_B_K_LIGHT_NAVY:
+        return InputCommand::Navy;
+
+      case IRCODE_B_K_LIGHT_BLUE:
+        return InputCommand::Blue;
+      case IRCODE_B_K_LIGHT_ROYAL_BLUE:
+        return InputCommand::RoyalBlue;
+      case IRCODE_B_K_LIGHT_PURPLE:
+        return InputCommand::Purple;
+      case IRCODE_B_K_LIGHT_INDIGO:
+        return InputCommand::Indigo;
+      case IRCODE_B_K_LIGHT_PINK:
+        return InputCommand::Pink;
+
+      case IRCODE_B_K_LIGHT_WHITE:
+        return InputCommand::White;
+      case IRCODE_B_K_LIGHT_FLASH:
+        return InputCommand::Up;
+      case IRCODE_B_K_LIGHT_STROBE:
+        return InputCommand::Down;
+      case IRCODE_B_K_LIGHT_FADE:
+        return InputCommand::PlayMode;
+      case IRCODE_B_K_LIGHT_SMOOTH:
+        return InputCommand::Palette;
+    }
+  }
+
   return InputCommand::None;
+}
+
+unsigned long readIRCode(unsigned int holdDelay) {
+  // read the raw code from the sensor
+  unsigned long irCode = readIRCode();
+
+  //LOG_DEBUG(millis());
+  //LOG_DEBUG("\t");
+  //LOG_DEBUG(irCode);
+
+  // don't return a short click until we know it's not a long hold
+  // we'll have to wait for holdDelay ms to pass before returning a non-zero IR code
+  // then, after that delay, as long as the button is held, we can keep returning the code
+  // every time until it's released
+
+  // the ir remote only sends codes every 107 ms or so (avg 106.875, max 111, min 102),
+  // so the ir sensor will return 0 even if a button is held
+  // so we have to wait longer than that before returning a non-zero code
+  // in order to detect that a button has been released and is no longer held
+
+  // only reset after we've gotten 0 back for more than the ir remote send interval
+  unsigned int zeroTime = 0;
+
+  if (irCode == 0) {
+    zeroTime = millis() - zeroStartTime;
+    if (zeroTime >= zeroDelay && lastIrCode != 0) {
+      //LOG_DEBUG("zero delay has elapsed, returning last ir code");
+      // the button has been released for longer than the zero delay
+      // start over delays over and return the last code
+      irCode = lastIrCode;
+      lastIrCode = 0;
+      return irCode;
+    }
+
+    return 0;
+  }
+
+  // reset the zero timer every time a non-zero code is read
+  zeroStartTime = millis();
+
+  unsigned int heldTime = 0;
+
+  if (irCode == IRCODE_SPARKFUN_HELD || irCode == IRCODE_ADAFRUIT_HELD || irCode == IRCODE_B_K_LIGHT_HELD) {
+    switch (getCommand(lastIrCode)) {
+      case InputCommand::BlueDown:
+      case InputCommand::BlueUp:
+      case InputCommand::GreenDown:
+      case InputCommand::GreenUp:
+      case InputCommand::RedDown:
+      case InputCommand::RedUp:
+      case InputCommand::BrightnessDown:
+      case InputCommand::BrightnessUp: {
+        // has the hold delay passed?
+        heldTime = millis() - holdStartTime;
+        if (heldTime >= holdDelay) {
+          isHolding = true;
+          //LOG_DEBUG("hold delay has elapsed, returning last ir code");
+          return lastIrCode;
+        }
+        else if (holdStartTime == 0) {
+          isHolding = false;
+          holdStartTime = millis();
+        }
+      }
+    }
+  }
+  else {
+    // not zero, not IRCODE_SPARKFUN_HELD
+    // store it for use later, until the hold and zero delays have elapsed
+    holdStartTime = millis();
+    isHolding = false;
+    lastIrCode = irCode;
+    return 0;
+  }
+
+  return 0;
+}
+
+void heldButtonHasBeenHandled() {
+  lastIrCode = 0;
+  isHolding = false;
+  holdStartTime = 0;
+}
+
+unsigned long waitForIRCode() {
+
+  unsigned long irCode = readIRCode();
+  while ((irCode == 0) || (irCode == 0xFFFFFFFF)) {
+    delay(200);
+    irCode = readIRCode();
+  }
+  return irCode;
 }
 
 InputCommand readCommand() {

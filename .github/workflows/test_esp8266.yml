@@ -50,7 +50,8 @@ jobs:
                   name: FastLED
                 - source-url: "https://github.com/Links2004/arduinoWebSockets.git"
                   name: WebSockets
-                - source-url: "https://github.com/crankyoldgit/IRremoteESP8266.git"
+                - source-url: "https://github.com/BorisKofman/IRremoteESP8266.git"
+                  version: "Espressif-version-3"
                   name: IRremoteESP8266
                 - source-url: "https://github.com/tzapu/WiFiManager.git"
                   name: WiFiManager

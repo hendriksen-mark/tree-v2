@@ -77,15 +77,15 @@ f.write("""/*
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */\n\n""")
 
-f.write("const double radii[NUM_LEDS] = {\n  ")
+f.write("const uint16_t radii[NUM_LEDS] = {\n  ")
 f.write(str(radii)[1:-1])
 f.write("\n};\n\n")
 
-f.write("const uint8_t conicalRadii[NUM_LEDS] = {\n  ")
+f.write("const uint16_t conicalRadii[NUM_LEDS] = {\n  ")
 f.write("0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2\n")
 f.write("};\n\n")
 
-f.write("const uint8_t angles[NUM_LEDS] = {\n  ")
+f.write("const uint16_t angles[NUM_LEDS] = {\n  ")
 f.write(str(angles)[1:-1])
 f.write("\n};\n\n")
 
@@ -102,19 +102,19 @@ f.write("const uint16_t levelEnd[levelCount] = {\n  ")
 f.write(str(levelEnd)[1:-1])
 f.write("\n};\n\n")
 
-f.write("const uint8_t levels[NUM_LEDS] = {\n  ")
+f.write("const uint16_t levels[NUM_LEDS] = {\n  ")
 f.write(str(levels)[1:-1])
 f.write("\n};\n\n")
 
-f.write("const uint8_t zCoords[NUM_LEDS] = {\n  ")
+f.write("const uint16_t zCoords[NUM_LEDS] = {\n  ")
 f.write(str(zCoords)[1:-1])
 f.write("\n};\n\n")
 
-f.write("const uint8_t xCoords[NUM_LEDS] = {\n  ")
+f.write("const uint16_t xCoords[NUM_LEDS] = {\n  ")
 f.write(str(xCoords)[1:-1])
 f.write("\n};\n\n")
 
-f.write("const uint8_t yCoords[NUM_LEDS] = {\n  ")
+f.write("const uint16_t yCoords[NUM_LEDS] = {\n  ")
 f.write(str(yCoords)[1:-1])
 f.write("\n};\n\n")
 
