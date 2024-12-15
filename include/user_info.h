@@ -11,7 +11,7 @@ const char* password = "";
 // #define LED_TYPE      WS2812 //for WS2812 strips
 #define COLOR_ORDER   RGB
 // #define COLOR_ORDER   GRB //for WS2812 strips
-#define NUM_LEDS      300
+#define NUM_LEDS      450
 
 #define MILLI_AMPS         15000     // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
 #define FRAMES_PER_SECOND  60 // here you can control the speed. With the Access Point / Web Server the animations run a bit slower.

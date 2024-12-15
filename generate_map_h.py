@@ -2,10 +2,12 @@
 from math import sin, cos, radians
 
 NUM_LEDS = 0
-LEDS_PER_CIRCLE = [115, 85, 55, 35, 10]
+LEDS_PER_CIRCLE = [105, 80, 68, 58, 50, 38, 27, 13, 11]
 
 for x in range(len(LEDS_PER_CIRCLE)):
     NUM_LEDS += LEDS_PER_CIRCLE[x]
+
+print("#define NUM_LEDS " + str(NUM_LEDS))
 
 ### end user space ###
 
@@ -57,7 +59,7 @@ for led in range(NUM_LEDS):
     yCoords.append(int(128 + (current_radii / 2) * sin(radians((current_angle/256)*360))))
     current_angle += angles_steps[current_circle]
 
-f = open("Map.h", "w")
+f = open("include/Map.h", "w")
 
 f.write("""/*
    Tree v2: https://github.com/evilgeniuslabs/tree-v2
